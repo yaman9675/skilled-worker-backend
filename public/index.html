@@ -1,298 +1,657 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WorkConnect - Skilled Worker Platform</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-slate-900 text-white min-h-screen p-4 font-sans">
-
-  <div class="max-w-4xl mx-auto space-y-8">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FixKart - Futuristic Skilled Worker Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- HEADER -->
-    <div class="flex justify-between items-center border-b border-slate-700 pb-4">
-      <h1 class="text-2xl font-bold text-cyan-400">WorkConnect</h1>
-      <div class="space-x-2">
-        <button onclick="switchTab('search')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg border border-slate-600 text-sm">Find Workers</button>
-        <button onclick="switchTab('register')" class="px-3 py-1.5 bg-cyan-500 hover:bg-cyan-600 text-slate-950 font-bold rounded-lg text-sm">Register</button>
-        <button onclick="switchTab('edit')" class="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-lg text-sm">Edit Profile</button>
-      </div>
-    </div>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        cyber: {
+                            bg: '#050814',
+                            card: 'rgba(12, 19, 43, 0.75)',
+                            border: 'rgba(0, 240, 255, 0.3)',
+                            cyan: '#00f0ff',
+                            purple: '#a855f7',
+                            pink: '#ec4899',
+                            dark: '#0a0f24'
+                        }
+                    },
+                    fontFamily: {
+                        orbitron: ['Orbitron', 'sans-serif'],
+                        rajdhani: ['Rajdhani', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
 
-    <!-- TAB 1: SEARCH WORKERS -->
-    <div id="searchTab" class="space-y-6">
-      <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div>
-          <label class="block text-sm text-slate-400 mb-1">City</label>
-          <input type="text" id="searchCity" placeholder="e.g. Ghaziabad" class="w-full bg-slate-900 border border-slate-700 rounded p-2 focus:outline-none focus:border-cyan-400">
-        </div>
-        <div>
-          <label class="block text-sm text-slate-400 mb-1">Pincode</label>
-          <input type="text" id="searchPincode" placeholder="e.g. 201002" class="w-full bg-slate-900 border border-slate-700 rounded p-2 focus:outline-none focus:border-cyan-400">
-        </div>
-        <div>
-          <label class="block text-sm text-slate-400 mb-1">Service</label>
-          <input type="text" id="searchService" placeholder="e.g. Plumber" class="w-full bg-slate-900 border border-slate-700 rounded p-2 focus:outline-none focus:border-cyan-400">
-        </div>
-        <div class="flex items-end">
-          <button onclick="fetchWorkers()" class="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold p-2 rounded transition">Search</button>
-        </div>
-      </div>
+    <style>
+        body {
+            background-color: #050814;
+            background-image: 
+                radial-gradient(circle at 15% 15%, rgba(0, 240, 255, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 85% 85%, rgba(168, 85, 247, 0.08) 0%, transparent 40%),
+                linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 30px 30px, 30px 30px;
+            font-family: 'Rajdhani', sans-serif;
+            color: #e2e8f0;
+            min-height: 100vh;
+        }
 
-      <!-- WORKERS LIST RESULTS -->
-      <div id="workersList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <!-- Dynamic cards load here -->
-      </div>
-    </div>
+        .hud-border {
+            position: relative;
+            background: rgba(12, 19, 43, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(0, 240, 255, 0.25);
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.08);
+            clip-path: polygon(
+                0 15px, 15px 0, 
+                calc(100% - 15px) 0, 100% 15px, 
+                100% calc(100% - 15px), calc(100% - 15px) 100%, 
+                15px 100%, 0 calc(100% - 15px)
+            );
+        }
 
-    <!-- TAB 2: REGISTER WORKER -->
-    <div id="registerTab" class="hidden bg-slate-800 p-6 rounded-xl border border-slate-700 max-w-xl mx-auto space-y-4">
-      <h2 class="text-xl font-bold text-cyan-400">Worker Registration</h2>
-      
-      <div>
-        <label class="block text-sm text-slate-400 mb-1">Full Name</label>
-        <input type="text" id="regName" class="w-full bg-slate-900 border border-slate-700 rounded p-2 focus:outline-none focus:border-cyan-400">
-      </div>
-      <div>
-        <label class="block text-sm text-slate-400 mb-1">Phone Number</label>
-        <input type="text" id="regPhone" class="w-full bg-slate-900 border border-slate-700 rounded p-2 focus:outline-none focus:border-cyan-400">
-      </div>
-      <div class="grid grid-cols-2 gap-4">
-        <div>
-          <label class="block text-sm text-slate-400 mb-1">City</label>
-          <input type="text" id="regCity" class="w-full bg-slate-900 border border-slate-700 rounded p-2 focus:outline-none focus:border-cyan-400">
-        </div>
-        <div>
-          <label class="block text-sm text-slate-400 mb-1">Pincode</label>
-          <input type="text" id="regPincode" placeholder="6-digit Pincode" class="w-full bg-slate-900 border border-slate-700 rounded p-2 focus:outline-none focus:border-cyan-400">
-        </div>
-      </div>
-      <div>
-        <label class="block text-sm text-slate-400 mb-1">Address</label>
-        <input type="text" id="regAddress" class="w-full bg-slate-900 border border-slate-700 rounded p-2 focus:outline-none focus:border-cyan-400">
-      </div>
-      <div>
-        <label class="block text-sm text-slate-400 mb-1">Occupations (Comma separated)</label>
-        <input type="text" id="regOccupations" placeholder="Plumber, Electrician" class="w-full bg-slate-900 border border-slate-700 rounded p-2 focus:outline-none focus:border-cyan-400">
-      </div>
+        .hud-border::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 10px; height: 10px;
+            border-top: 2px solid #00f0ff;
+            border-left: 2px solid #00f0ff;
+        }
 
-      <button onclick="registerWorker()" class="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold p-3 rounded mt-2">Submit & Live Profile</button>
-      <p id="regMsg" class="text-sm text-center mt-2"></p>
-    </div>
+        .hud-border::after {
+            content: '';
+            position: absolute;
+            bottom: 0; right: 0;
+            width: 10px; height: 10px;
+            border-bottom: 2px solid #00f0ff;
+            border-right: 2px solid #00f0ff;
+        }
 
-    <!-- TAB 3: EDIT PROFILE WITH OTP -->
-    <div id="editTab" class="hidden bg-slate-800 p-6 rounded-xl border border-slate-700 max-w-xl mx-auto space-y-4">
-      <h2 class="text-xl font-bold text-amber-400">Edit Worker Profile</h2>
+        .glow-cyan {
+            text-shadow: 0 0 10px rgba(0, 240, 255, 0.7);
+        }
 
-      <!-- STEP 1: Phone & Request OTP -->
-      <div id="editStep1" class="space-y-3">
-        <div>
-          <label class="block text-sm text-slate-400 mb-1">Registered Phone Number</label>
-          <input type="text" id="editPhone" placeholder="e.g. 9876543210" class="w-full bg-slate-900 border border-slate-700 rounded p-2 focus:outline-none focus:border-amber-400">
-        </div>
-        <button onclick="sendOTP()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold p-2.5 rounded">Send OTP</button>
-      </div>
+        .glow-purple {
+            text-shadow: 0 0 10px rgba(168, 85, 247, 0.7);
+        }
 
-      <!-- STEP 2: Verify OTP -->
-      <div id="editStep2" class="hidden space-y-3">
-        <div>
-          <label class="block text-sm text-slate-400 mb-1">Enter 4-Digit OTP (Use 1234 for test)</label>
-          <input type="text" id="otpInput" placeholder="1234" class="w-full bg-slate-900 border border-slate-700 rounded p-2 focus:outline-none focus:border-amber-400">
-        </div>
-        <button onclick="verifyOTP()" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold p-2.5 rounded">Verify OTP & Fetch Profile</button>
-      </div>
+        .btn-cyber-cyan {
+            background: linear-gradient(135deg, rgba(0, 240, 255, 0.2), rgba(0, 150, 255, 0.4));
+            border: 1px solid #00f0ff;
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
+            transition: all 0.3s ease;
+        }
 
-      <!-- STEP 3: Edit & Save Profile -->
-      <div id="editStep3" class="hidden space-y-3">
-        <div>
-          <label class="block text-sm text-slate-400 mb-1">Full Name</label>
-          <input type="text" id="editName" class="w-full bg-slate-900 border border-slate-700 rounded p-2 focus:outline-none focus:border-amber-400">
-        </div>
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm text-slate-400 mb-1">City</label>
-            <input type="text" id="editCity" class="w-full bg-slate-900 border border-slate-700 rounded p-2 focus:outline-none focus:border-amber-400">
-          </div>
-          <div>
-            <label class="block text-sm text-slate-400 mb-1">Pincode</label>
-            <input type="text" id="editPincode" class="w-full bg-slate-900 border border-slate-700 rounded p-2 focus:outline-none focus:border-amber-400">
-          </div>
-        </div>
-        <div>
-          <label class="block text-sm text-slate-400 mb-1">Address</label>
-          <input type="text" id="editAddress" class="w-full bg-slate-900 border border-slate-700 rounded p-2 focus:outline-none focus:border-amber-400">
-        </div>
-        <div>
-          <label class="block text-sm text-slate-400 mb-1">Occupations (Comma separated)</label>
-          <input type="text" id="editOccupations" class="w-full bg-slate-900 border border-slate-700 rounded p-2 focus:outline-none focus:border-amber-400">
-        </div>
+        .btn-cyber-cyan:hover {
+            background: linear-gradient(135deg, rgba(0, 240, 255, 0.4), rgba(0, 200, 255, 0.7));
+            box-shadow: 0 0 25px rgba(0, 240, 255, 0.6);
+            transform: translateY(-1px);
+        }
 
-        <button onclick="updateProfile()" class="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold p-2.5 rounded">Update Profile</button>
-      </div>
+        .btn-cyber-green {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(16, 185, 129, 0.4));
+            border: 1px solid #22c55e;
+            box-shadow: 0 0 15px rgba(34, 197, 94, 0.3);
+            transition: all 0.3s ease;
+        }
 
-      <p id="editMsg" class="text-sm text-center mt-2"></p>
-    </div>
+        .btn-cyber-green:hover {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.4), rgba(16, 185, 129, 0.7));
+            box-shadow: 0 0 25px rgba(34, 197, 94, 0.6);
+            transform: translateY(-1px);
+        }
 
-  </div>
+        .scanline {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(
+                to bottom,
+                rgba(255,255,255,0),
+                rgba(255,255,255,0) 50%,
+                rgba(0, 240, 255, 0.03) 50%,
+                rgba(0, 240, 255, 0.03)
+            );
+            background-size: 100% 4px;
+            pointer-events: none;
+        }
 
-  <script>
-    let activePhone = '';
+        .cyber-input {
+            background: rgba(8, 14, 33, 0.8);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            color: #00f0ff;
+            transition: all 0.3s ease;
+        }
 
-    function switchTab(tab) {
-      document.getElementById('searchTab').classList.add('hidden');
-      document.getElementById('registerTab').classList.add('hidden');
-      document.getElementById('editTab').classList.add('hidden');
+        .cyber-input:focus {
+            outline: none;
+            border-color: #00f0ff;
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+        }
 
-      if (tab === 'search') document.getElementById('searchTab').classList.remove('hidden');
-      if (tab === 'register') document.getElementById('registerTab').classList.remove('hidden');
-      if (tab === 'edit') document.getElementById('editTab').classList.remove('hidden');
-    }
+        .tab-btn.active {
+            background: rgba(0, 240, 255, 0.15);
+            border-color: #00f0ff;
+            color: #00f0ff;
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
+        }
+    </style>
+</head>
+<body class="p-3 md:p-6 relative overflow-x-hidden">
+    <div class="scanline"></div>
 
-    async function fetchWorkers() {
-      const city = document.getElementById('searchCity').value;
-      const pincode = document.getElementById('searchPincode').value;
-      const service = document.getElementById('searchService').value;
-
-      const res = await fetch(`/api/workers?city=${city}&pincode=${pincode}&service=${service}`);
-      const result = await res.json();
-
-      const listDiv = document.getElementById('workersList');
-      listDiv.innerHTML = '';
-
-      if (result.data.length === 0) {
-        listDiv.innerHTML = '<p class="text-slate-500 col-span-2">No workers found.</p>';
-        return;
-      }
-
-      result.data.forEach(worker => {
-        listDiv.innerHTML += `
-          <div class="bg-slate-800 p-4 rounded-lg border border-slate-700 space-y-2">
-            <h3 class="text-lg font-bold text-white">${worker.name}</h3>
-            <p class="text-sm text-slate-400">📍 ${worker.address}, ${worker.city} - <span class="text-cyan-400 font-semibold">${worker.pincode}</span></p>
-            <div class="flex flex-wrap gap-1">
-              ${worker.occupations.map(o => `<span class="bg-cyan-950 text-cyan-300 text-xs px-2 py-1 rounded border border-cyan-800">${o}</span>`).join('')}
+    <header class="max-w-7xl mx-auto mb-6 flex flex-col md:flex-row items-center justify-between gap-4 border-b border-cyber-border pb-4">
+        <div class="flex items-center gap-3">
+            <div class="relative flex items-center justify-center w-12 h-12 rounded-lg bg-cyber-dark border border-cyber-cyan shadow-[0_0_15px_rgba(0,240,255,0.4)]">
+                <i class="fa-solid fa-gear text-cyber-cyan text-2xl animate-spin-slow"></i>
+                <i class="fa-solid fa-bolt text-cyber-pink text-xs absolute"></i>
             </div>
-            <div class="flex gap-2 mt-4 pt-2 border-t border-slate-700">
-              <a href="tel:${worker.phone}" class="flex-1 text-center bg-cyan-500 text-slate-950 font-bold py-1.5 rounded text-sm">Call Now</a>
-              <a href="https://wa.me/${worker.phone}" target="_blank" class="flex-1 text-center bg-emerald-600 text-white font-bold py-1.5 rounded text-sm">WhatsApp</a>
+            <div>
+                <h1 class="font-orbitron text-3xl md:text-4xl font-extrabold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-cyber-cyan via-purple-400 to-cyber-pink glow-cyan">
+                    FixKart
+                </h1>
+                <p class="text-xs font-orbitron tracking-widest text-cyan-400 opacity-80">PRO-SKILLED WORKER PLATFORM</p>
             </div>
-          </div>
-        `;
-      });
-    }
+        </div>
 
-    async function registerWorker() {
-      const payload = {
-        name: document.getElementById('regName').value,
-        phone: document.getElementById('regPhone').value,
-        city: document.getElementById('regCity').value,
-        pincode: document.getElementById('regPincode').value,
-        address: document.getElementById('regAddress').value,
-        occupations: document.getElementById('regOccupations').value.split(',').map(s => s.trim())
-      };
+        <!-- Navigation Tabs -->
+        <nav class="flex flex-wrap gap-2 md:gap-3 bg-cyber-dark p-1.5 rounded-xl border border-slate-800">
+            <button onclick="switchTab('search')" id="tab-search" class="tab-btn active font-orbitron text-xs md:text-sm px-4 py-2 rounded-lg border border-transparent transition-all duration-300 flex items-center gap-2">
+                <i class="fa-solid fa-magnifying-glass text-cyber-cyan"></i> Find Workers
+            </button>
+            <button onclick="switchTab('register')" id="tab-register" class="tab-btn font-orbitron text-xs md:text-sm px-4 py-2 rounded-lg border border-transparent transition-all duration-300 flex items-center gap-2 text-slate-400 hover:text-white">
+                <i class="fa-solid fa-user-plus text-purple-400"></i> Register
+            </button>
+            <button onclick="switchTab('edit')" id="tab-edit" class="tab-btn font-orbitron text-xs md:text-sm px-4 py-2 rounded-lg border border-transparent transition-all duration-300 flex items-center gap-2 text-slate-400 hover:text-white">
+                <i class="fa-solid fa-user-pen text-amber-400"></i> Edit Profile
+            </button>
+        </nav>
+    </header>
 
-      const res = await fetch('/api/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
+    <main class="max-w-7xl mx-auto">
 
-      const result = await res.json();
-      const msgEl = document.getElementById('regMsg');
+        <!-- Notification Bar -->
+        <div id="toast-msg" class="hidden mb-4 p-3 rounded-lg border font-orbitron text-sm flex items-center justify-between transition-all duration-300">
+            <span id="toast-text"></span>
+            <button onclick="closeToast()" class="text-xs hover:opacity-80"><i class="fa-solid fa-xmark"></i></button>
+        </div>
 
-      if (result.success) {
-        msgEl.className = "text-sm text-center text-emerald-400 mt-2";
-        msgEl.innerText = "Profile created successfully!";
-        setTimeout(() => switchTab('search'), 1500);
-      } else {
-        msgEl.className = "text-sm text-center text-rose-400 mt-2";
-        msgEl.innerText = result.message || "Failed to register.";
-      }
-    }
+        <!-- SECTION 1: SEARCH WORKERS -->
+        <section id="section-search" class="space-y-6">
+            <!-- Search Panel -->
+            <div class="hud-border p-5 md:p-6 rounded-2xl">
+                <h2 class="font-orbitron text-lg text-cyber-cyan mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-sliders"></i> FILTER MATRIX
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-xs font-orbitron text-slate-400 mb-1">CITY</label>
+                        <input type="text" id="search-city" placeholder="e.g. Ghaziabad, Dhampur" class="cyber-input w-full px-3 py-2.5 rounded-lg text-sm placeholder-slate-600">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-orbitron text-slate-400 mb-1">PINCODE</label>
+                        <input type="text" id="search-pincode" placeholder="e.g. 201002, 246761" class="cyber-input w-full px-3 py-2.5 rounded-lg text-sm placeholder-slate-600">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-orbitron text-slate-400 mb-1">SERVICE / OCCUPATION</label>
+                        <input type="text" id="search-service" placeholder="e.g. Plumber, Painter" class="cyber-input w-full px-3 py-2.5 rounded-lg text-sm placeholder-slate-600">
+                    </div>
+                    <div class="flex items-end">
+                        <button onclick="performSearch()" class="btn-cyber-cyan w-full font-orbitron text-sm font-bold text-cyber-cyan py-2.5 rounded-lg flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-radar"></i> SEARCH
+                        </button>
+                    </div>
+                </div>
+            </div>
 
-    async function sendOTP() {
-      activePhone = document.getElementById('editPhone').value;
-      const res = await fetch('/api/send-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: activePhone })
-      });
-      const data = await res.json();
-      const msg = document.getElementById('editMsg');
+            <!-- Worker Grid -->
+            <div>
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-orbitron text-md text-slate-300 flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-cyber-cyan animate-ping"></span>
+                        AVAILABLE WORKERS (<span id="worker-count" class="text-cyber-cyan">0</span>)
+                    </h3>
+                </div>
+                
+                <div id="worker-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                    <!-- Dynamic Cards will be rendered here -->
+                </div>
+            </div>
+        </section>
 
-      if (data.success) {
-        msg.className = "text-sm text-center text-emerald-400";
-        msg.innerText = data.message;
-        document.getElementById('editStep1').classList.add('hidden');
-        document.getElementById('editStep2').classList.remove('hidden');
-      } else {
-        msg.className = "text-sm text-center text-rose-400";
-        msg.innerText = data.message;
-      }
-    }
+        <section id="section-register" class="hidden max-w-2xl mx-auto">
+            <div class="hud-border p-6 md:p-8 rounded-2xl">
+                <h2 class="font-orbitron text-xl text-purple-400 mb-1 flex items-center gap-2 glow-purple">
+                    <i class="fa-solid fa-id-card"></i> WORKER REGISTRATION
+                </h2>
+                <p class="text-xs text-slate-400 mb-6 font-orbitron">Join FixKart network as a verified skilled professional</p>
 
-    async function verifyOTP() {
-      const otp = document.getElementById('otpInput').value;
+                <form id="register-form" onsubmit="handleRegistration(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-orbitron text-slate-300 mb-1">FULL NAME *</label>
+                        <input type="text" id="reg-name" required placeholder="e.g. Rahul Kumar" class="cyber-input w-full px-3 py-2.5 rounded-lg text-sm">
+                    </div>
 
-      const res = await fetch('/api/verify-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: activePhone, otp })
-      });
-      const data = await res.json();
-      const msg = document.getElementById('editMsg');
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-orbitron text-slate-300 mb-1">PHONE NUMBER *</label>
+                            <input type="tel" id="reg-phone" required pattern="[0-9]{10}" placeholder="10-digit mobile number" class="cyber-input w-full px-3 py-2.5 rounded-lg text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-orbitron text-slate-300 mb-1">CITY *</label>
+                            <input type="text" id="reg-city" required placeholder="e.g. Ghaziabad" class="cyber-input w-full px-3 py-2.5 rounded-lg text-sm">
+                        </div>
+                    </div>
 
-      if (data.success) {
-        msg.className = "text-sm text-center text-emerald-400";
-        msg.innerText = "Verified! Update your details below.";
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-orbitron text-slate-300 mb-1">PINCODE *</label>
+                            <input type="text" id="reg-pincode" required pattern="[0-9]{6}" placeholder="e.g. 201002" class="cyber-input w-full px-3 py-2.5 rounded-lg text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-orbitron text-slate-300 mb-1">ADDRESS / LOCALITY *</label>
+                            <input type="text" id="reg-address" required placeholder="e.g. Sector 10, Raj Nagar" class="cyber-input w-full px-3 py-2.5 rounded-lg text-sm">
+                        </div>
+                    </div>
 
-        document.getElementById('editName').value = data.data.name;
-        document.getElementById('editCity').value = data.data.city;
-        document.getElementById('editPincode').value = data.data.pincode || '';
-        document.getElementById('editAddress').value = data.data.address;
-        document.getElementById('editOccupations').value = data.data.occupations.join(', ');
+                    <div>
+                        <label class="block text-xs font-orbitron text-slate-300 mb-2">OCCUPATIONS / SERVICES *</label>
+                        <div class="flex flex-wrap gap-2 text-xs">
+                            <label class="cyber-tag cursor-pointer bg-cyber-dark border border-slate-700 px-3 py-1.5 rounded-lg flex items-center gap-1.5 hover:border-cyber-cyan">
+                                <input type="checkbox" name="reg-occupations" value="Plumber" class="accent-cyan-400"> Plumber
+                            </label>
+                            <label class="cyber-tag cursor-pointer bg-cyber-dark border border-slate-700 px-3 py-1.5 rounded-lg flex items-center gap-1.5 hover:border-cyber-cyan">
+                                <input type="checkbox" name="reg-occupations" value="Electrician" class="accent-cyan-400"> Electrician
+                            </label>
+                            <label class="cyber-tag cursor-pointer bg-cyber-dark border border-slate-700 px-3 py-1.5 rounded-lg flex items-center gap-1.5 hover:border-cyber-cyan">
+                                <input type="checkbox" name="reg-occupations" value="Painter" class="accent-cyan-400"> Painter
+                            </label>
+                            <label class="cyber-tag cursor-pointer bg-cyber-dark border border-slate-700 px-3 py-1.5 rounded-lg flex items-center gap-1.5 hover:border-cyber-cyan">
+                                <input type="checkbox" name="reg-occupations" value="Carpenter" class="accent-cyan-400"> Carpenter
+                            </label>
+                            <label class="cyber-tag cursor-pointer bg-cyber-dark border border-slate-700 px-3 py-1.5 rounded-lg flex items-center gap-1.5 hover:border-cyber-cyan">
+                                <input type="checkbox" name="reg-occupations" value="AC Repair" class="accent-cyan-400"> AC Repair
+                            </label>
+                            <label class="cyber-tag cursor-pointer bg-cyber-dark border border-slate-700 px-3 py-1.5 rounded-lg flex items-center gap-1.5 hover:border-cyber-cyan">
+                                <input type="checkbox" name="reg-occupations" value="Mechanic" class="accent-cyan-400"> Mechanic
+                            </label>
+                        </div>
+                    </div>
 
-        document.getElementById('editStep2').classList.add('hidden');
-        document.getElementById('editStep3').classList.remove('hidden');
-      } else {
-        msg.className = "text-sm text-center text-rose-400";
-        msg.innerText = data.message;
-      }
-    }
+                    <button type="submit" class="w-full btn-cyber-cyan font-orbitron text-sm font-bold text-cyber-cyan py-3 rounded-lg mt-4 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-user-check"></i> CREATE WORKER PROFILE
+                    </button>
+                </form>
+            </div>
+        </section>
 
-    async function updateProfile() {
-      const payload = {
-        phone: activePhone,
-        name: document.getElementById('editName').value,
-        city: document.getElementById('editCity').value,
-        pincode: document.getElementById('editPincode').value,
-        address: document.getElementById('editAddress').value,
-        occupations: document.getElementById('editOccupations').value.split(',').map(s => s.trim())
-      };
+        <section id="section-edit" class="hidden max-w-2xl mx-auto">
+            <div class="hud-border p-6 md:p-8 rounded-2xl">
+                <h2 class="font-orbitron text-xl text-amber-400 mb-1 flex items-center gap-2 glow-purple">
+                    <i class="fa-solid fa-shield-halved"></i> SECURE PROFILE MANAGEMENT
+                </h2>
+                <p class="text-xs text-slate-400 mb-6 font-orbitron">Verify your registered mobile number using OTP to edit profile</p>
 
-      const res = await fetch('/api/update-profile', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      const data = await res.json();
-      const msg = document.getElementById('editMsg');
+                <!-- STEP 1: OTP REQUEST FORM -->
+                <div id="otp-step-1" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-orbitron text-slate-300 mb-1">REGISTERED PHONE NUMBER</label>
+                        <div class="flex gap-2">
+                            <input type="tel" id="edit-phone" placeholder="Enter 10-digit number" class="cyber-input flex-grow px-3 py-2.5 rounded-lg text-sm">
+                            <button onclick="sendOTP()" class="btn-cyber-cyan font-orbitron text-xs font-bold text-cyber-cyan px-4 py-2.5 rounded-lg whitespace-nowrap">
+                                SEND OTP
+                            </button>
+                        </div>
+                    </div>
 
-      if (data.success) {
-        msg.className = "text-sm text-center text-emerald-400";
-        msg.innerText = "Profile updated successfully!";
-        setTimeout(() => {
-          switchTab('search');
-          fetchWorkers();
-        }, 1500);
-      } else {
-        msg.className = "text-sm text-center text-rose-400";
-        msg.innerText = data.message;
-      }
-    }
+                    <!-- OTP Input Box (Hidden initially) -->
+                    <div id="otp-input-box" class="hidden p-4 rounded-xl bg-cyber-dark border border-amber-500/30 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-orbitron text-amber-400">ENTER VERIFICATION OTP</span>
+                            <span class="text-xs text-slate-500">(Demo Code: <strong class="text-amber-300">1234</strong>)</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <input type="text" id="otp-code" maxlength="4" placeholder="1234" class="cyber-input flex-grow text-center text-lg tracking-widest px-3 py-2 rounded-lg font-mono">
+                            <button onclick="verifyOTP()" class="btn-cyber-green font-orbitron text-xs font-bold text-green-400 px-5 py-2 rounded-lg">
+                                VERIFY
+                            </button>
+                        </div>
+                    </div>
+                </div>
 
-    fetchWorkers();
-  </script>
+                <!-- STEP 2: PROFILE EDIT FORM (Hidden until OTP verified) -->
+                <form id="edit-profile-form" onsubmit="handleProfileUpdate(event)" class="hidden space-y-4 mt-6 pt-6 border-t border-slate-800">
+                    <div class="p-2 rounded bg-green-500/10 border border-green-500/30 text-green-400 text-xs font-orbitron flex items-center gap-2">
+                        <i class="fa-solid fa-circle-check"></i> AUTHENTICATED: READY FOR EDITING
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-orbitron text-slate-300 mb-1">NAME</label>
+                        <input type="text" id="edit-name" required class="cyber-input w-full px-3 py-2.5 rounded-lg text-sm">
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-orbitron text-slate-300 mb-1">CITY</label>
+                            <input type="text" id="edit-city" required class="cyber-input w-full px-3 py-2.5 rounded-lg text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-orbitron text-slate-300 mb-1">PINCODE</label>
+                            <input type="text" id="edit-pincode" required pattern="[0-9]{6}" class="cyber-input w-full px-3 py-2.5 rounded-lg text-sm">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-orbitron text-slate-300 mb-1">ADDRESS</label>
+                        <input type="text" id="edit-address" required class="cyber-input w-full px-3 py-2.5 rounded-lg text-sm">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-orbitron text-slate-300 mb-2">OCCUPATIONS / SERVICES</label>
+                        <div class="flex flex-wrap gap-2 text-xs">
+                            <label class="cyber-tag cursor-pointer bg-cyber-dark border border-slate-700 px-3 py-1.5 rounded-lg flex items-center gap-1.5">
+                                <input type="checkbox" name="edit-occupations" value="Plumber" class="accent-cyan-400"> Plumber
+                            </label>
+                            <label class="cyber-tag cursor-pointer bg-cyber-dark border border-slate-700 px-3 py-1.5 rounded-lg flex items-center gap-1.5">
+                                <input type="checkbox" name="edit-occupations" value="Electrician" class="accent-cyan-400"> Electrician
+                            </label>
+                            <label class="cyber-tag cursor-pointer bg-cyber-dark border border-slate-700 px-3 py-1.5 rounded-lg flex items-center gap-1.5">
+                                <input type="checkbox" name="edit-occupations" value="Painter" class="accent-cyan-400"> Painter
+                            </label>
+                            <label class="cyber-tag cursor-pointer bg-cyber-dark border border-slate-700 px-3 py-1.5 rounded-lg flex items-center gap-1.5">
+                                <input type="checkbox" name="edit-occupations" value="Carpenter" class="accent-cyan-400"> Carpenter
+                            </label>
+                            <label class="cyber-tag cursor-pointer bg-cyber-dark border border-slate-700 px-3 py-1.5 rounded-lg flex items-center gap-1.5">
+                                <input type="checkbox" name="edit-occupations" value="AC Repair" class="accent-cyan-400"> AC Repair
+                            </label>
+                            <label class="cyber-tag cursor-pointer bg-cyber-dark border border-slate-700 px-3 py-1.5 rounded-lg flex items-center gap-1.5">
+                                <input type="checkbox" name="edit-occupations" value="Mechanic" class="accent-cyan-400"> Mechanic
+                            </label>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full btn-cyber-green font-orbitron text-sm font-bold text-green-400 py-3 rounded-lg flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-floppy-disk"></i> UPDATE PROFILE DATA
+                    </button>
+                </form>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // Initial Mock Database Records (Integrated with backend fallback logic)
+        let workersDatabase = [
+            {
+                id: "1",
+                name: "Amit Sharma",
+                phone: "9876543210",
+                city: "Ghaziabad",
+                pincode: "201002",
+                address: "Raj Nagar Sector 10",
+                occupations: ["Plumber", "Electrician"],
+                avatar: "https://images.unsplash.com/photo-1540569014015-19a7be504e3a?w=150&auto=format&fit=crop&q=80"
+            },
+            {
+                id: "2",
+                name: "Monu",
+                phone: "9410488445",
+                city: "Dhampur",
+                pincode: "246761",
+                address: "Chemical Road Allhaipur",
+                occupations: ["Painter"],
+                avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80"
+            }
+        ];
+
+        let activeVerifiedPhone = null;
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active', 'text-cyber-cyan');
+                btn.classList.add('text-slate-400');
+            });
+            
+            document.getElementById('section-search').classList.add('hidden');
+            document.getElementById('section-register').classList.add('hidden');
+            document.getElementById('section-edit').classList.add('hidden');
+
+            const selectedBtn = document.getElementById(`tab-${tabName}`);
+            selectedBtn.classList.add('active');
+            selectedBtn.classList.remove('text-slate-400');
+
+            document.getElementById(`section-${tabName}`).classList.remove('hidden');
+        }
+
+        function renderWorkers(workers) {
+            const grid = document.getElementById('worker-grid');
+            const countEl = document.getElementById('worker-count');
+            countEl.innerText = workers.length;
+
+            if (workers.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full text-center py-12 hud-border rounded-xl">
+                        <i class="fa-solid fa-user-slash text-4xl text-slate-600 mb-3"></i>
+                        <p class="font-orbitron text-slate-400 text-sm">NO MATCHING WORKERS FOUND IN THIS MATRIX</p>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = workers.map(worker => `
+                <div class="hud-border p-5 rounded-xl flex flex-col justify-between space-y-4 hover:border-cyber-cyan transition-all">
+                    <div class="flex items-start gap-4">
+                        <div class="relative">
+                            <img src="${worker.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80'}" 
+                                 alt="${worker.name}" 
+                                 class="w-14 h-14 rounded-lg object-cover border border-cyber-cyan/50 shadow-[0_0_10px_rgba(0,240,255,0.3)]">
+                            <span class="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-cyber-dark"></span>
+                        </div>
+                        <div class="flex-grow">
+                            <h4 class="font-orbitron font-bold text-lg text-white">${worker.name}</h4>
+                            <p class="text-xs text-cyber-cyan flex items-center gap-1 mt-0.5">
+                                <i class="fa-solid fa-location-dot"></i> 
+                                ${worker.address}, ${worker.city} - <span class="font-mono text-amber-300">${worker.pincode}</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-wrap gap-1.5">
+                        ${worker.occupations.map(occ => `
+                            <span class="text-[11px] font-orbitron bg-cyber-dark/80 text-purple-300 border border-purple-500/30 px-2.5 py-0.5 rounded">
+                                ${occ}
+                            </span>
+                        `).join('')}
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-800/80">
+                        <a href="tel:${worker.phone}" class="btn-cyber-cyan text-center py-2 text-xs font-orbitron font-bold text-cyber-cyan rounded flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-phone"></i> CALL NOW
+                        </a>
+                        <a href="https://wa.me/91${worker.phone}" target="_blank" class="btn-cyber-green text-center py-2 text-xs font-orbitron font-bold text-green-400 rounded flex items-center justify-center gap-1.5">
+                            <i class="fa-brands fa-whatsapp text-sm"></i> WHATSAPP
+                        </a>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function performSearch() {
+            const city = document.getElementById('search-city').value.toLowerCase().trim();
+            const pincode = document.getElementById('search-pincode').value.trim();
+            const service = document.getElementById('search-service').value.toLowerCase().trim();
+
+            const filtered = workersDatabase.filter(w => {
+                const matchCity = !city || w.city.toLowerCase().includes(city);
+                const matchPincode = !pincode || w.pincode.includes(pincode);
+                const matchService = !service || w.occupations.some(occ => occ.toLowerCase().includes(service));
+                return matchCity && matchPincode && matchService;
+            });
+
+            renderWorkers(filtered);
+        }
+
+        function handleRegistration(e) {
+            e.preventDefault();
+
+            const name = document.getElementById('reg-name').value.trim();
+            const phone = document.getElementById('reg-phone').value.trim();
+            const city = document.getElementById('reg-city').value.trim();
+            const pincode = document.getElementById('reg-pincode').value.trim();
+            const address = document.getElementById('reg-address').value.trim();
+
+            const selectedOccs = Array.from(document.querySelectorAll('input[name="reg-occupations"]:checked')).map(cb => cb.value);
+
+            if (selectedOccs.length === 0) {
+                showToast("Please select at least one occupation service!", "error");
+                return;
+            }
+
+            // Check if phone exists
+            if (workersDatabase.some(w => w.phone === phone)) {
+                showToast("Phone number already registered. Please use Edit Profile.", "error");
+                return;
+            }
+
+            const newWorker = {
+                id: Date.now().toString(),
+                name,
+                phone,
+                city,
+                pincode,
+                address,
+                occupations: selectedOccs,
+                avatar: `https://images.unsplash.com/photo-${1530000000000 + Math.floor(Math.random()*100000)}?w=150&auto=format&fit=crop&q=80`
+            };
+
+            workersDatabase.push(newWorker);
+            showToast("Worker Profile Successfully Created!", "success");
+            
+            // Reset form and switch to search
+            document.getElementById('register-form').reset();
+            renderWorkers(workersDatabase);
+            switchTab('search');
+        }
+
+        function sendOTP() {
+            const phone = document.getElementById('edit-phone').value.trim();
+            if (phone.length !== 10) {
+                showToast("Please enter a valid 10-digit phone number", "error");
+                return;
+            }
+
+            const worker = workersDatabase.find(w => w.phone === phone);
+            if (!worker) {
+                showToast("No account found with this phone number!", "error");
+                return;
+            }
+
+            document.getElementById('otp-input-box').classList.remove('hidden');
+            showToast("OTP sent successfully! Demo OTP code is 1234", "info");
+        }
+
+        function verifyOTP() {
+            const code = document.getElementById('otp-code').value.trim();
+            const phone = document.getElementById('edit-phone').value.trim();
+
+            if (code === "1234") {
+                const worker = workersDatabase.find(w => w.phone === phone);
+                if (worker) {
+                    activeVerifiedPhone = phone;
+                    populateEditForm(worker);
+                    document.getElementById('edit-profile-form').classList.remove('hidden');
+                    showToast("OTP Verified! Profile unlocked.", "success");
+                }
+            } else {
+                showToast("Invalid OTP code. Please enter 1234", "error");
+            }
+        }
+
+        function populateEditForm(worker) {
+            document.getElementById('edit-name').value = worker.name;
+            document.getElementById('edit-city').value = worker.city;
+            document.getElementById('edit-pincode').value = worker.pincode;
+            document.getElementById('edit-address').value = worker.address;
+
+            document.querySelectorAll('input[name="edit-occupations"]').forEach(cb => {
+                cb.checked = worker.occupations.includes(cb.value);
+            });
+        }
+
+        function handleProfileUpdate(e) {
+            e.preventDefault();
+            if (!activeVerifiedPhone) return;
+
+            const name = document.getElementById('edit-name').value.trim();
+            const city = document.getElementById('edit-city').value.trim();
+            const pincode = document.getElementById('edit-pincode').value.trim();
+            const address = document.getElementById('edit-address').value.trim();
+
+            const selectedOccs = Array.from(document.querySelectorAll('input[name="edit-occupations"]:checked')).map(cb => cb.value);
+
+            if (selectedOccs.length === 0) {
+                showToast("Please select at least one occupation service!", "error");
+                return;
+            }
+
+            const index = workersDatabase.findIndex(w => w.phone === activeVerifiedPhone);
+            if (index !== -1) {
+                workersDatabase[index] = {
+                    ...workersDatabase[index],
+                    name,
+                    city,
+                    pincode,
+                    address,
+                    occupations: selectedOccs
+                };
+
+                showToast("Worker Profile Updated Successfully!", "success");
+                renderWorkers(workersDatabase);
+                switchTab('search');
+            }
+        }
+
+        function showToast(msg, type = "info") {
+            const toast = document.getElementById('toast-msg');
+            const text = document.getElementById('toast-text');
+            
+            toast.className = "mb-4 p-3 rounded-lg border font-orbitron text-sm flex items-center justify-between transition-all duration-300 ";
+            
+            if (type === "success") {
+                toast.classList.add('bg-green-500/20', 'border-green-500', 'text-green-300');
+            } else if (type === "error") {
+                toast.classList.add('bg-red-500/20', 'border-red-500', 'text-red-300');
+            } else {
+                toast.classList.add('bg-cyber-cyan/20', 'border-cyber-cyan', 'text-cyan-300');
+            }
+
+            text.innerText = msg;
+            toast.classList.remove('hidden');
+
+            setTimeout(() => {
+                closeToast();
+            }, 5000);
+        }
+
+        function closeToast() {
+            document.getElementById('toast-msg').classList.add('hidden');
+        }
+
+        // Initial Load Event
+        window.onload = function() {
+            renderWorkers(workersDatabase);
+        };
+    </script>
 </body>
 </html>
