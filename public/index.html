@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WorkConnect - Skilled Worker Platform</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-900 text-white min-h-screen p-4 font-sans">
+
+  <div class="max-w-4xl mx-auto space-y-8">
+    
+    <!-- HEADER -->
+    <div class="flex justify-between items-center border-b border-slate-700 pb-4">
+      <h1 class="text-2xl font-bold text-cyan-400">WorkConnect</h1>
+      <div class="space-x-2">
+        <button onclick="switchTab('search')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg border border-slate-600 text-sm">Find Workers</button>
+        <button onclick="switchTab('register')" class="px-3 py-1.5 bg-cyan-500 hover:bg-cyan-600 text-slate-950 font-bold rounded-lg text-sm">Register</button>
+        <button onclick="switchTab('edit')" class="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-lg text-sm">Edit Profile</button>
+      </div>
+    </div>
+
+    <!-- TAB 1: SEARCH WORKERS -->
+    <div id="searchTab" class="space-y-6">
+      <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div>
+          <label class="block text-sm text-slate-400 mb-1">City</label>
+          <input type="text" id="searchCity" placeholder="e.g. Ghaziabad" class="w-full bg-slate-900 border border-slate-700 rounded p-2 focus:outline-none focus:border-cyan-400">
+        </div>
+        <div>
+          <label class="block text-sm text-slate-400 mb-1">Pincode</label>
+          <input type="text" id="searchPincode" placeholder="e.g. 201002" class="w-full bg-slate-900 border border-slate-700 rounded p-2 focus:outline-none focus:border-cyan-400">
+        </div>
+        <div>
+          <label class="block text-sm text-slate-400 mb-1">Service</label>
+          <input type="text" id="searchService" placeholder="e.g. Plumber" class="w-full bg-slate-900 border border-slate-700 rounded p-2 focus:outline-none focus:border-cyan-400">
+        </div>
+        <div class="flex items-end">
+          <button onclick="fetchWorkers()" class="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold p-2 rounded transition">Search</button>
+        </div>
+      </div>
+
+      <!-- WORKERS LIST RESULTS -->
+      <div id="workersList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Dynamic cards load here -->
+      </div>
+    </div>
+
+    <!-- TAB 2: REGISTER WORKER -->
+    <div id="registerTab" class="hidden bg-slate-800 p-6 rounded-xl border border-slate-700 max-w-xl mx-auto space-y-4">
+      <h2 class="text-xl font-bold text-cyan-400">Worker Registration</h2>
+      
+      <div>
+        <label class="block text-sm text-slate-400 mb-1">Full Name</label>
+        <input type="text" id="regName" class="w-full bg-slate-900 border border-slate-700 rounded p-2 focus:outline-none focus:border-cyan-400">
+      </div>
+      <div>
+        <label class="block text-sm text-slate-400 mb-1">Phone Number</label>
+        <input type="text" id="regPhone" class="w-full bg-slate-900 border border-slate-700 rounded p-2 focus:outline-none focus:border-cyan-400">
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm text-slate-400 mb-1">City</label>
+          <input type="text" id="regCity" class="w-full bg-slate-900 border border-slate-700 rounded p-2 focus:outline-none focus:border-cyan-400">
+        </div>
+        <div>
+          <label class="block text-sm text-slate-400 mb-1">Pincode</label>
+          <input type="text" id="regPincode" placeholder="6-digit Pincode" class="w-full bg-slate-900 border border-slate-700 rounded p-2 focus:outline-none focus:border-cyan-400">
+        </div>
+      </div>
+      <div>
+        <label class="block text-sm text-slate-400 mb-1">Address</label>
+        <input type="text" id="regAddress" class="w-full bg-slate-900 border border-slate-700 rounded p-2 focus:outline-none focus:border-cyan-400">
+      </div>
+      <div>
+        <label class="block text-sm text-slate-400 mb-1">Occupations (Comma separated)</label>
+        <input type="text" id="regOccupations" placeholder="Plumber, Electrician" class="w-full bg-slate-900 border border-slate-700 rounded p-2 focus:outline-none focus:border-cyan-400">
+      </div>
+
+      <button onclick="registerWorker()" class="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold p-3 rounded mt-2">Submit & Live Profile</button>
+      <p id="regMsg" class="text-sm text-center mt-2"></p>
+    </div>
+
+    <!-- TAB 3: EDIT PROFILE WITH OTP -->
+    <div id="editTab" class="hidden bg-slate-800 p-6 rounded-xl border border-slate-700 max-w-xl mx-auto space-y-4">
+      <h2 class="text-xl font-bold text-amber-400">Edit Worker Profile</h2>
+
+      <!-- STEP 1: Phone & Request OTP -->
+      <div id="editStep1" class="space-y-3">
+        <div>
+          <label class="block text-sm text-slate-400 mb-1">Registered Phone Number</label>
+          <input type="text" id="editPhone" placeholder="e.g. 9876543210" class="w-full bg-slate-900 border border-slate-700 rounded p-2 focus:outline-none focus:border-amber-400">
+        </div>
+        <button onclick="sendOTP()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold p-2.5 rounded">Send OTP</button>
+      </div>
+
+      <!-- STEP 2: Verify OTP -->
+      <div id="editStep2" class="hidden space-y-3">
+        <div>
+          <label class="block text-sm text-slate-400 mb-1">Enter 4-Digit OTP (Use 1234 for test)</label>
+          <input type="text" id="otpInput" placeholder="1234" class="w-full bg-slate-900 border border-slate-700 rounded p-2 focus:outline-none focus:border-amber-400">
+        </div>
+        <button onclick="verifyOTP()" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold p-2.5 rounded">Verify OTP & Fetch Profile</button>
+      </div>
+
+      <!-- STEP 3: Edit & Save Profile -->
+      <div id="editStep3" class="hidden space-y-3">
+        <div>
+          <label class="block text-sm text-slate-400 mb-1">Full Name</label>
+          <input type="text" id="editName" class="w-full bg-slate-900 border border-slate-700 rounded p-2 focus:outline-none focus:border-amber-400">
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm text-slate-400 mb-1">City</label>
+            <input type="text" id="editCity" class="w-full bg-slate-900 border border-slate-700 rounded p-2 focus:outline-none focus:border-amber-400">
+          </div>
+          <div>
+            <label class="block text-sm text-slate-400 mb-1">Pincode</label>
+            <input type="text" id="editPincode" class="w-full bg-slate-900 border border-slate-700 rounded p-2 focus:outline-none focus:border-amber-400">
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm text-slate-400 mb-1">Address</label>
+          <input type="text" id="editAddress" class="w-full bg-slate-900 border border-slate-700 rounded p-2 focus:outline-none focus:border-amber-400">
+        </div>
+        <div>
+          <label class="block text-sm text-slate-400 mb-1">Occupations (Comma separated)</label>
+          <input type="text" id="editOccupations" class="w-full bg-slate-900 border border-slate-700 rounded p-2 focus:outline-none focus:border-amber-400">
+        </div>
+
+        <button onclick="updateProfile()" class="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold p-2.5 rounded">Update Profile</button>
+      </div>
+
+      <p id="editMsg" class="text-sm text-center mt-2"></p>
+    </div>
+
+  </div>
+
+  <script>
+    let activePhone = '';
+
+    function switchTab(tab) {
+      document.getElementById('searchTab').classList.add('hidden');
+      document.getElementById('registerTab').classList.add('hidden');
+      document.getElementById('editTab').classList.add('hidden');
+
+      if (tab === 'search') document.getElementById('searchTab').classList.remove('hidden');
+      if (tab === 'register') document.getElementById('registerTab').classList.remove('hidden');
+      if (tab === 'edit') document.getElementById('editTab').classList.remove('hidden');
+    }
+
+    async function fetchWorkers() {
+      const city = document.getElementById('searchCity').value;
+      const pincode = document.getElementById('searchPincode').value;
+      const service = document.getElementById('searchService').value;
+
+      const res = await fetch(`/api/workers?city=${city}&pincode=${pincode}&service=${service}`);
+      const result = await res.json();
+
+      const listDiv = document.getElementById('workersList');
+      listDiv.innerHTML = '';
+
+      if (result.data.length === 0) {
+        listDiv.innerHTML = '<p class="text-slate-500 col-span-2">No workers found.</p>';
+        return;
+      }
+
+      result.data.forEach(worker => {
+        listDiv.innerHTML += `
+          <div class="bg-slate-800 p-4 rounded-lg border border-slate-700 space-y-2">
+            <h3 class="text-lg font-bold text-white">${worker.name}</h3>
+            <p class="text-sm text-slate-400">📍 ${worker.address}, ${worker.city} - <span class="text-cyan-400 font-semibold">${worker.pincode}</span></p>
+            <div class="flex flex-wrap gap-1">
+              ${worker.occupations.map(o => `<span class="bg-cyan-950 text-cyan-300 text-xs px-2 py-1 rounded border border-cyan-800">${o}</span>`).join('')}
+            </div>
+            <div class="flex gap-2 mt-4 pt-2 border-t border-slate-700">
+              <a href="tel:${worker.phone}" class="flex-1 text-center bg-cyan-500 text-slate-950 font-bold py-1.5 rounded text-sm">Call Now</a>
+              <a href="https://wa.me/${worker.phone}" target="_blank" class="flex-1 text-center bg-emerald-600 text-white font-bold py-1.5 rounded text-sm">WhatsApp</a>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    async function registerWorker() {
+      const payload = {
+        name: document.getElementById('regName').value,
+        phone: document.getElementById('regPhone').value,
+        city: document.getElementById('regCity').value,
+        pincode: document.getElementById('regPincode').value,
+        address: document.getElementById('regAddress').value,
+        occupations: document.getElementById('regOccupations').value.split(',').map(s => s.trim())
+      };
+
+      const res = await fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const result = await res.json();
+      const msgEl = document.getElementById('regMsg');
+
+      if (result.success) {
+        msgEl.className = "text-sm text-center text-emerald-400 mt-2";
+        msgEl.innerText = "Profile created successfully!";
+        setTimeout(() => switchTab('search'), 1500);
+      } else {
+        msgEl.className = "text-sm text-center text-rose-400 mt-2";
+        msgEl.innerText = result.message || "Failed to register.";
+      }
+    }
+
+    async function sendOTP() {
+      activePhone = document.getElementById('editPhone').value;
+      const res = await fetch('/api/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: activePhone })
+      });
+      const data = await res.json();
+      const msg = document.getElementById('editMsg');
+
+      if (data.success) {
+        msg.className = "text-sm text-center text-emerald-400";
+        msg.innerText = data.message;
+        document.getElementById('editStep1').classList.add('hidden');
+        document.getElementById('editStep2').classList.remove('hidden');
+      } else {
+        msg.className = "text-sm text-center text-rose-400";
+        msg.innerText = data.message;
+      }
+    }
+
+    async function verifyOTP() {
+      const otp = document.getElementById('otpInput').value;
+
+      const res = await fetch('/api/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: activePhone, otp })
+      });
+      const data = await res.json();
+      const msg = document.getElementById('editMsg');
+
+      if (data.success) {
+        msg.className = "text-sm text-center text-emerald-400";
+        msg.innerText = "Verified! Update your details below.";
+
+        document.getElementById('editName').value = data.data.name;
+        document.getElementById('editCity').value = data.data.city;
+        document.getElementById('editPincode').value = data.data.pincode || '';
+        document.getElementById('editAddress').value = data.data.address;
+        document.getElementById('editOccupations').value = data.data.occupations.join(', ');
+
+        document.getElementById('editStep2').classList.add('hidden');
+        document.getElementById('editStep3').classList.remove('hidden');
+      } else {
+        msg.className = "text-sm text-center text-rose-400";
+        msg.innerText = data.message;
+      }
+    }
+
+    async function updateProfile() {
+      const payload = {
+        phone: activePhone,
+        name: document.getElementById('editName').value,
+        city: document.getElementById('editCity').value,
+        pincode: document.getElementById('editPincode').value,
+        address: document.getElementById('editAddress').value,
+        occupations: document.getElementById('editOccupations').value.split(',').map(s => s.trim())
+      };
+
+      const res = await fetch('/api/update-profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      const msg = document.getElementById('editMsg');
+
+      if (data.success) {
+        msg.className = "text-sm text-center text-emerald-400";
+        msg.innerText = "Profile updated successfully!";
+        setTimeout(() => {
+          switchTab('search');
+          fetchWorkers();
+        }, 1500);
+      } else {
+        msg.className = "text-sm text-center text-rose-400";
+        msg.innerText = data.message;
+      }
+    }
+
+    fetchWorkers();
+  </script>
+</body>
+</html>
