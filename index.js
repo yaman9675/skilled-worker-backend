@@ -100,8 +100,9 @@ app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Start Server
-const PORT = process.env.PORT || 10000;
-app.listen(PORT, () => {
+// Server Port Setup (Render automatically assigns process.env.PORT)
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 FixKart Server running on port ${PORT}`);
 });
