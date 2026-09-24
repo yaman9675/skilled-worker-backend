@@ -1,157 +1,107 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-require('dotenv').config();
+const path = require('path');
 
 const app = express();
 
+// Middleware
 app.use(express.json());
 app.use(cors());
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname, 'public')));
 
-// 1. MONGODB CONNECTION
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/skilled_worker_db';
+// 1. MongoDB Connection Setup
+const MONGO_URI = process.env.MONGO_URI || 'YOUR_MONGODB_CONNECTION_STRING_HERE';
 
 mongoose.connect(MONGO_URI)
-  .then(() => console.log('✅ MongoDB Connected Successfully'))
-  .catch((err) => console.error('❌ MongoDB Connection Error:', err));
+    .then(() => console.log('✅ Connected to MongoDB Database Successfully!'))
+    .catch((err) => console.error('❌ MongoDB Connection Error:', err));
 
-// 2. MONGOOSE SCHEMA (Pincode Added)
-const userSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  phone: { type: String, required: true, unique: true },
-  city: { type: String, required: true },
-  pincode: { type: String, required: true }, // 👈 Added Pincode
-  address: { type: String, required: true },
-  occupations: { type: [String], required: true },
-}, { timestamps: true });
-
-const User = mongoose.model('User', userSchema);
-
-const otpStore = {}; 
-
-function escapeRegex(text) {
-  return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
-}
-
-// 3. API ROUTES
-
-// API Status
-app.get('/api/health', (req, res) => {
-  res.json({ success: true, message: 'Skilled Worker API is Running...' });
+// 2. Worker Schema & Model Definition
+const workerSchema = new mongoose.Schema({
+    name: { type: String, required: true },
+    phone: { type: String, required: true, unique: true },
+    city: { type: String, required: true },
+    pincode: { type: String, required: true },
+    address: { type: String, required: true },
+    occupations: [{ type: String }],
+    avatar: { type: String, default: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80' },
+    createdAt: { type: Date, default: Date.now }
 });
 
-// API 1: Register Worker
-app.post('/api/register', async (req, res) => {
-  try {
-    const { name, phone, city, pincode, address, occupations } = req.body;
+const Worker = mongoose.model('Worker', workerSchema);
 
-    if (!name || !phone || !city || !pincode || !address || !occupations || !Array.isArray(occupations) || occupations.length === 0) {
-      return res.status(400).json({ success: false, message: 'All fields are required.' });
-    }
 
-    const existingUser = await User.findOne({ phone });
-    if (existingUser) {
-      return res.status(400).json({ success: false, message: 'Phone number already registered. Please use Edit Profile.' });
-    }
+// --- API ROUTES FOR FRONTEND ---
 
-    const newUser = new User({ name, phone, city, pincode, address, occupations });
-    await newUser.save();
-
-    res.status(201).json({ success: true, message: 'Worker Profile Created!', data: newUser });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-// API 2: Search Workers (City, Service, or Pincode)
+// ROUTE 1: Get All Workers (MongoDB se saare workers fetch karna)
 app.get('/api/workers', async (req, res) => {
-  try {
-    const { city, service, pincode } = req.query;
-    let query = {};
-
-    if (city && city.trim() !== '') {
-      query.city = { $regex: new RegExp(escapeRegex(city.trim()), 'i') };
+    try {
+        const workers = await Worker.find().sort({ createdAt: -1 });
+        res.json(workers);
+    } catch (err) {
+        res.status(500).json({ error: true, message: 'Failed to fetch workers from database' });
     }
-
-    if (pincode && pincode.trim() !== '') {
-      query.pincode = pincode.trim(); // 👈 Exact match for pincode
-    }
-
-    if (service && service.trim() !== '') {
-      query.occupations = { $in: [new RegExp(escapeRegex(service.trim()), 'i')] };
-    }
-
-    const workers = await User.find(query).sort({ createdAt: -1 });
-
-    res.status(200).json({
-      success: true,
-      count: workers.length,
-      data: workers
-    });
-
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
 });
 
-// API 3: Send OTP
-app.post('/api/send-otp', async (req, res) => {
-  try {
-    const { phone } = req.body;
-    if (!phone) return res.status(400).json({ success: false, message: 'Phone number is required.' });
+// ROUTE 2: Register New Worker (Naya worker MongoDB mein add karna)
+app.post('/api/workers/register', async (req, res) => {
+    try {
+        const { name, phone, city, pincode, address, occupations, avatar } = req.body;
 
-    const worker = await User.findOne({ phone });
-    if (!worker) return res.status(404).json({ success: false, message: 'Phone number not registered!' });
+        // Check if worker already exists
+        const existingWorker = await Worker.findOne({ phone });
+        if (existingWorker) {
+            return res.status(400).json({ error: true, message: 'Phone number already registered!' });
+        }
 
-    const generatedOtp = '1234'; 
-    otpStore[phone] = generatedOtp;
+        const newWorker = new Worker({
+            name,
+            phone,
+            city,
+            pincode,
+            address,
+            occupations,
+            avatar
+        });
 
-    console.log(`[OTP Sent] Phone: ${phone}, OTP: ${generatedOtp}`);
-    res.status(200).json({ success: true, message: 'OTP sent successfully! (Use 1234 for testing)' });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-// API 4: Verify OTP
-app.post('/api/verify-otp', async (req, res) => {
-  try {
-    const { phone, otp } = req.body;
-
-    if (!otpStore[phone] || otpStore[phone] !== otp) {
-      return res.status(400).json({ success: false, message: 'Invalid or expired OTP!' });
+        await newWorker.save();
+        res.status(201).json({ success: true, message: 'Worker registered successfully in MongoDB!', data: newWorker });
+    } catch (err) {
+        console.error('Registration Error:', err);
+        res.status(500).json({ error: true, message: 'Server Error: Unable to save worker details' });
     }
-
-    const worker = await User.findOne({ phone });
-    delete otpStore[phone];
-
-    res.status(200).json({ success: true, message: 'OTP Verified successfully!', data: worker });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
 });
 
-// API 5: Update Profile
-app.put('/api/update-profile', async (req, res) => {
-  try {
-    const { phone, name, city, pincode, address, occupations } = req.body;
+// ROUTE 3: Update Worker Profile (Verified phone number se MongoDB record update karna)
+app.put('/api/workers/update', async (req, res) => {
+    try {
+        const { phone, name, city, pincode, address, occupations } = req.body;
 
-    const updatedWorker = await User.findOneAndUpdate(
-      { phone },
-      { name, city, pincode, address, occupations },
-      { new: true, runValidators: true }
-    );
+        const updatedWorker = await Worker.findOneAndUpdate(
+            { phone: phone },
+            { name, city, pincode, address, occupations },
+            { new: true } // Return updated document
+        );
 
-    if (!updatedWorker) return res.status(404).json({ success: false, message: 'Worker not found!' });
+        if (!updatedWorker) {
+            return res.status(404).json({ error: true, message: 'Worker not found in database' });
+        }
 
-    res.status(200).json({ success: true, message: 'Profile updated successfully!', data: updatedWorker });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
+        res.json({ success: true, message: 'Profile updated successfully!', data: updatedWorker });
+    } catch (err) {
+        console.error('Update Error:', err);
+        res.status(500).json({ error: true, message: 'Failed to update profile' });
+    }
 });
 
-const PORT = process.env.PORT || 5000;
+// Serve frontend for root URL
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// Start Server
+const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`🚀 FixKart Server running on port ${PORT}`);
 });
