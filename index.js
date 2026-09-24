@@ -5,7 +5,7 @@ const path = require('path');
 
 const app = express();
 
-// Middleware
+// Middlewares
 app.use(express.json());
 app.use(cors());
 app.use(express.static(path.join(__dirname, 'public')));
@@ -17,7 +17,7 @@ mongoose.connect(MONGO_URI)
     .then(() => console.log('✅ Connected to MongoDB Database Successfully!'))
     .catch((err) => console.error('❌ MongoDB Connection Error:', err));
 
-// 2. Worker Schema & Model Definition
+// 2. Schema & Model Setup
 const workerSchema = new mongoose.Schema({
     name: { type: String, required: true },
     phone: { type: String, required: true, unique: true },
@@ -31,25 +31,23 @@ const workerSchema = new mongoose.Schema({
 
 const Worker = mongoose.model('Worker', workerSchema);
 
+// --- API ROUTES ---
 
-// --- API ROUTES FOR FRONTEND ---
-
-// ROUTE 1: Get All Workers (MongoDB se saare workers fetch karna)
+// ROUTE 1: Get All Workers
 app.get('/api/workers', async (req, res) => {
     try {
         const workers = await Worker.find().sort({ createdAt: -1 });
         res.json(workers);
     } catch (err) {
-        res.status(500).json({ error: true, message: 'Failed to fetch workers from database' });
+        res.status(500).json({ error: true, message: 'Failed to fetch workers' });
     }
 });
 
-// ROUTE 2: Register New Worker (Naya worker MongoDB mein add karna)
+// ROUTE 2: Register New Worker
 app.post('/api/workers/register', async (req, res) => {
     try {
         const { name, phone, city, pincode, address, occupations, avatar } = req.body;
 
-        // Check if worker already exists
         const existingWorker = await Worker.findOne({ phone });
         if (existingWorker) {
             return res.status(400).json({ error: true, message: 'Phone number already registered!' });
@@ -66,14 +64,14 @@ app.post('/api/workers/register', async (req, res) => {
         });
 
         await newWorker.save();
-        res.status(201).json({ success: true, message: 'Worker registered successfully in MongoDB!', data: newWorker });
+        res.status(201).json({ success: true, message: 'Worker registered successfully!', data: newWorker });
     } catch (err) {
         console.error('Registration Error:', err);
-        res.status(500).json({ error: true, message: 'Server Error: Unable to save worker details' });
+        res.status(500).json({ error: true, message: 'Unable to save worker details' });
     }
 });
 
-// ROUTE 3: Update Worker Profile (Verified phone number se MongoDB record update karna)
+// ROUTE 3: Update Worker Profile
 app.put('/api/workers/update', async (req, res) => {
     try {
         const { phone, name, city, pincode, address, occupations } = req.body;
@@ -81,11 +79,11 @@ app.put('/api/workers/update', async (req, res) => {
         const updatedWorker = await Worker.findOneAndUpdate(
             { phone: phone },
             { name, city, pincode, address, occupations },
-            { new: true } // Return updated document
+            { new: true }
         );
 
         if (!updatedWorker) {
-            return res.status(404).json({ error: true, message: 'Worker not found in database' });
+            return res.status(404).json({ error: true, message: 'Worker not found' });
         }
 
         res.json({ success: true, message: 'Profile updated successfully!', data: updatedWorker });
@@ -95,14 +93,13 @@ app.put('/api/workers/update', async (req, res) => {
     }
 });
 
-// Serve frontend for root URL
-app.get('*', (req, res) => {
+// Serve frontend catch-all route (Express 5.x compatible syntax)
+app.get('/{*splat}', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Server Port Setup (Render automatically assigns process.env.PORT)
-const PORT = process.env.PORT || 3000;
-
+// Listen on environment port with 0.0.0.0 binding
+const PORT = process.env.PORT || 10000;
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 FixKart Server running on port ${PORT}`);
 });
