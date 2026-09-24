@@ -8,7 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Firebase SDKs (Compat Version for standard HTML) -->
+    <!-- Firebase SDKs (Compat Version) -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
@@ -99,13 +99,8 @@
             border-right: 2px solid #00f0ff;
         }
 
-        .glow-cyan {
-            text-shadow: 0 0 10px rgba(0, 240, 255, 0.7);
-        }
-
-        .glow-purple {
-            text-shadow: 0 0 10px rgba(168, 85, 247, 0.7);
-        }
+        .glow-cyan { text-shadow: 0 0 10px rgba(0, 240, 255, 0.7); }
+        .glow-purple { text-shadow: 0 0 10px rgba(168, 85, 247, 0.7); }
 
         .btn-cyber-cyan {
             background: linear-gradient(135deg, rgba(0, 240, 255, 0.2), rgba(0, 150, 255, 0.4));
@@ -317,7 +312,7 @@
                 <h2 class="font-orbitron text-xl text-amber-400 mb-1 flex items-center gap-2 glow-purple">
                     <i class="fa-solid fa-shield-halved"></i> SECURE PROFILE MANAGEMENT
                 </h2>
-                <p class="text-xs text-slate-400 mb-6 font-orbitron">Verify your registered mobile number using Firebase OTP to edit profile</p>
+                <p class="text-xs text-slate-400 mb-6 font-orbitron">Verify registered mobile number via Firebase OTP to update profile</p>
 
                 <!-- STEP 1: OTP REQUEST FORM -->
                 <div id="otp-step-1" class="space-y-4">
@@ -386,7 +381,7 @@
                     </div>
 
                     <button type="submit" class="w-full btn-cyber-green font-orbitron text-sm font-bold text-green-400 py-3 rounded-lg flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-floppy-disk"></i> UPDATE PROFILE DATA
+                        <i class="fa-solid fa-floppy-disk"></i> UPDATE PROFILE IN DATABASE
                     </button>
                 </form>
             </div>
@@ -417,19 +412,7 @@
     </div>
 
     <script>
-        let workersDatabase = [
-            {
-                id: "1",
-                name: "Amit Sharma",
-                phone: "9876543210",
-                city: "Ghaziabad",
-                pincode: "201002",
-                address: "Raj Nagar Sector 10",
-                occupations: ["Plumber"],
-                avatar: "https://images.unsplash.com/photo-1540569014015-19a7be504e3a?w=150&auto=format&fit=crop&q=80"
-            }
-        ];
-
+        let workersDatabase = [];
         let pendingRegData = null;
         let activeVerifiedPhone = null;
         let confirmationResultGlobal = null;
@@ -451,6 +434,21 @@
             document.getElementById(`section-${tabName}`).classList.remove('hidden');
         }
 
+        // --- FETCH WORKERS FROM MONGODB BACKEND ---
+        async function fetchAndRenderWorkers() {
+            try {
+                const response = await fetch('/api/workers');
+                if(response.ok) {
+                    workersDatabase = await response.json();
+                    renderWorkers(workersDatabase);
+                } else {
+                    console.error("Failed to fetch workers database");
+                }
+            } catch (err) {
+                console.error("MongoDB Fetch Error:", err);
+            }
+        }
+
         function renderWorkers(workers) {
             const grid = document.getElementById('worker-grid');
             const countEl = document.getElementById('worker-count');
@@ -460,7 +458,7 @@
                 grid.innerHTML = `
                     <div class="col-span-full text-center py-12 hud-border rounded-xl">
                         <i class="fa-solid fa-user-slash text-4xl text-slate-600 mb-3"></i>
-                        <p class="font-orbitron text-slate-400 text-sm">NO MATCHING WORKERS FOUND IN THIS MATRIX</p>
+                        <p class="font-orbitron text-slate-400 text-sm">NO MATCHING WORKERS FOUND IN MONGODB MATRIX</p>
                     </div>
                 `;
                 return;
@@ -485,7 +483,7 @@
                     </div>
 
                     <div class="flex flex-wrap gap-1.5">
-                        ${worker.occupations.map(occ => `
+                        ${(worker.occupations || []).map(occ => `
                             <span class="text-[11px] font-orbitron bg-cyber-dark/80 text-purple-300 border border-purple-500/30 px-2.5 py-0.5 rounded">
                                 ${occ}
                             </span>
@@ -510,16 +508,16 @@
             const service = document.getElementById('search-service').value.toLowerCase().trim();
 
             const filtered = workersDatabase.filter(w => {
-                const matchCity = !city || w.city.toLowerCase().includes(city);
-                const matchPincode = !pincode || w.pincode.includes(pincode);
-                const matchService = !service || w.occupations.some(occ => occ.toLowerCase().includes(service));
+                const matchCity = !city || (w.city && w.city.toLowerCase().includes(city));
+                const matchPincode = !pincode || (w.pincode && w.pincode.includes(pincode));
+                const matchService = !service || (w.occupations && w.occupations.some(occ => occ.toLowerCase().includes(service)));
                 return matchCity && matchPincode && matchService;
             });
 
             renderWorkers(filtered);
         }
 
-        /* --- FIREBASE REGISTRATION OTP FLOW --- */
+        /* --- FIREBASE REGISTRATION OTP FLOW WITH MONGODB SAVE --- */
         async function initiateRegistrationOTP(e) {
             e.preventDefault();
 
@@ -541,7 +539,6 @@
             }
 
             pendingRegData = {
-                id: Date.now().toString(),
                 name,
                 phone,
                 city,
@@ -551,7 +548,6 @@
                 avatar: `https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80`
             };
 
-            // Setup reCAPTCHA & Send Real SMS
             try {
                 if(!window.recaptchaVerifierReg) {
                     window.recaptchaVerifierReg = new firebase.auth.RecaptchaVerifier('recaptcha-container-reg', {
@@ -589,21 +585,36 @@
 
             try {
                 if (confirmationResultGlobal && pendingRegData) {
+                    // 1. Verify OTP using Firebase Auth
                     await confirmationResultGlobal.confirm(code);
-                    workersDatabase.push(pendingRegData);
-                    showToast("Real OTP Verified! Profile Created Successfully!", "success");
+                    showToast("OTP Verified! Saving to MongoDB Database...", "info");
                     
-                    document.getElementById('register-form').reset();
-                    closeRegOTPModal();
-                    renderWorkers(workersDatabase);
-                    switchTab('search');
+                    // 2. Save data to MongoDB Database via API
+                    const apiRes = await fetch('/api/workers/register', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(pendingRegData)
+                    });
+
+                    const resData = await apiRes.json();
+
+                    if(apiRes.ok) {
+                        showToast("Profile Created & Saved to Database Successfully!", "success");
+                        document.getElementById('register-form').reset();
+                        closeRegOTPModal();
+                        fetchAndRenderWorkers(); // Re-fetch from MongoDB
+                        switchTab('search');
+                    } else {
+                        showToast(resData.message || "Failed to save in MongoDB Database!", "error");
+                    }
                 }
             } catch (error) {
-                showToast("Invalid OTP code entered!", "error");
+                console.error("Verification Error:", error);
+                showToast("Invalid OTP code or Database Save Error!", "error");
             }
         }
 
-        /* --- FIREBASE EDIT PROFILE OTP FLOW --- */
+        /* --- FIREBASE EDIT PROFILE OTP FLOW WITH MONGODB UPDATE --- */
         async function sendEditOTP() {
             const phone = document.getElementById('edit-phone').value.trim();
             if (phone.length !== 10) {
@@ -613,7 +624,7 @@
 
             const worker = workersDatabase.find(w => w.phone === phone);
             if (!worker) {
-                showToast("No account found with this phone number!", "error");
+                showToast("No registered account found with this phone number!", "error");
                 return;
             }
 
@@ -650,7 +661,7 @@
                         activeVerifiedPhone = phone;
                         populateEditForm(worker);
                         document.getElementById('edit-profile-form').classList.remove('hidden');
-                        showToast("OTP Verified! Profile unlocked.", "success");
+                        showToast("OTP Verified! Profile unlocked for editing.", "success");
                     }
                 }
             } catch (error) {
@@ -663,10 +674,10 @@
             document.getElementById('edit-city').value = worker.city;
             document.getElementById('edit-pincode').value = worker.pincode;
             document.getElementById('edit-address').value = worker.address;
-            document.getElementById('edit-occupation-select').value = worker.occupations[0] || "Plumber";
+            document.getElementById('edit-occupation-select').value = (worker.occupations && worker.occupations[0]) || "Plumber";
         }
 
-        function handleProfileUpdate(e) {
+        async function handleProfileUpdate(e) {
             e.preventDefault();
             if (!activeVerifiedPhone) return;
 
@@ -676,20 +687,32 @@
             const address = document.getElementById('edit-address').value.trim();
             const occupation = document.getElementById('edit-occupation-select').value;
 
-            const index = workersDatabase.findIndex(w => w.phone === activeVerifiedPhone);
-            if (index !== -1) {
-                workersDatabase[index] = {
-                    ...workersDatabase[index],
-                    name,
-                    city,
-                    pincode,
-                    address,
-                    occupations: [occupation]
-                };
+            const updatedData = {
+                phone: activeVerifiedPhone,
+                name,
+                city,
+                pincode,
+                address,
+                occupations: [occupation]
+            };
 
-                showToast("Worker Profile Updated Successfully!", "success");
-                renderWorkers(workersDatabase);
-                switchTab('search');
+            try {
+                const apiRes = await fetch('/api/workers/update', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updatedData)
+                });
+
+                if (apiRes.ok) {
+                    showToast("Profile Updated in MongoDB Successfully!", "success");
+                    fetchAndRenderWorkers(); // Reload database
+                    switchTab('search');
+                } else {
+                    showToast("Failed to update profile in database", "error");
+                }
+            } catch (err) {
+                console.error("Update Error:", err);
+                showToast("Database Connection Error!", "error");
             }
         }
 
@@ -720,7 +743,7 @@
         }
 
         window.onload = function() {
-            renderWorkers(workersDatabase);
+            fetchAndRenderWorkers();
         };
     </script>
 </body>
