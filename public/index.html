@@ -8,7 +8,27 @@
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- Firebase SDKs (Compat Version for standard HTML) -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
     <script>
+        // Exact Config Details from your Firebase App
+        const firebaseConfig = {
+            apiKey: "AIzaSyCGybVUuY47Uv1FcK45pn3oyo7XvO2tWY8",
+            authDomain: "fixkart-9f9c3.firebaseapp.com",
+            projectId: "fixkart-9f9c3",
+            storageBucket: "fixkart-9f9c3.firebasestorage.app",
+            messagingSenderId: "331876060279",
+            appId: "1:331876060279:web:0cb8aa8e9a0300365c8a72",
+            measurementId: "G-D5NJ0T2779"
+        };
+
+        // Initialize Firebase
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+
         tailwind.config = {
             darkMode: 'class',
             theme: {
@@ -151,6 +171,10 @@
 <body class="p-3 md:p-6 relative overflow-x-hidden">
     <div class="scanline"></div>
 
+    <!-- Hidden reCAPTCHA containers for Firebase -->
+    <div id="recaptcha-container-reg"></div>
+    <div id="recaptcha-container-edit"></div>
+
     <header class="max-w-7xl mx-auto mb-6 flex flex-col md:flex-row items-center justify-between gap-4 border-b border-cyber-border pb-4">
         <div class="flex items-center gap-3">
             <div class="relative flex items-center justify-center w-12 h-12 rounded-lg bg-cyber-dark border border-cyber-cyan shadow-[0_0_15px_rgba(0,240,255,0.4)]">
@@ -267,7 +291,7 @@
                     </div>
 
                     <div>
-                        <label class="block text-xs font-orbitron text-slate-300 mb-2">OCCUPATIONS / SERVICES * (Dropdown)</label>
+                        <label class="block text-xs font-orbitron text-slate-300 mb-2">OCCUPATIONS / SERVICES *</label>
                         <select id="reg-occupation-select" class="cyber-input w-full px-3 py-2.5 rounded-lg text-sm font-rajdhani bg-cyber-dark">
                             <option value="" disabled selected>-- Select Primary Service --</option>
                             <option value="Plumber">Plumber</option>
@@ -281,7 +305,7 @@
                     </div>
 
                     <button type="submit" class="w-full btn-cyber-cyan font-orbitron text-sm font-bold text-cyber-cyan py-3 rounded-lg mt-4 flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-user-check"></i> CREATE WORKER PROFILE
+                        <i class="fa-solid fa-paper-plane"></i> SEND OTP & REGISTER
                     </button>
                 </form>
             </div>
@@ -293,7 +317,7 @@
                 <h2 class="font-orbitron text-xl text-amber-400 mb-1 flex items-center gap-2 glow-purple">
                     <i class="fa-solid fa-shield-halved"></i> SECURE PROFILE MANAGEMENT
                 </h2>
-                <p class="text-xs text-slate-400 mb-6 font-orbitron">Verify your registered mobile number using OTP to edit profile</p>
+                <p class="text-xs text-slate-400 mb-6 font-orbitron">Verify your registered mobile number using Firebase OTP to edit profile</p>
 
                 <!-- STEP 1: OTP REQUEST FORM -->
                 <div id="otp-step-1" class="space-y-4">
@@ -302,19 +326,18 @@
                         <div class="flex gap-2">
                             <input type="tel" id="edit-phone" placeholder="Enter 10-digit number" class="cyber-input flex-grow px-3 py-2.5 rounded-lg text-sm">
                             <button onclick="sendEditOTP()" class="btn-cyber-cyan font-orbitron text-xs font-bold text-cyber-cyan px-4 py-2.5 rounded-lg whitespace-nowrap">
-                                SEND OTP
+                                SEND REAL OTP
                             </button>
                         </div>
                     </div>
 
-                    <!-- OTP Input Box (Hidden initially) -->
+                    <!-- OTP Input Box -->
                     <div id="otp-input-box" class="hidden p-4 rounded-xl bg-cyber-dark border border-amber-500/30 space-y-3">
                         <div class="flex items-center justify-between">
-                            <span class="text-xs font-orbitron text-amber-400">ENTER VERIFICATION OTP</span>
-                            <span class="text-xs text-slate-500">(Demo Code: <strong class="text-amber-300">1234</strong>)</span>
+                            <span class="text-xs font-orbitron text-amber-400">ENTER 6-DIGIT FIREBASE OTP</span>
                         </div>
                         <div class="flex gap-2">
-                            <input type="text" id="otp-code" maxlength="4" placeholder="1234" class="cyber-input flex-grow text-center text-lg tracking-widest px-3 py-2 rounded-lg font-mono">
+                            <input type="text" id="otp-code" maxlength="6" placeholder="123456" class="cyber-input flex-grow text-center text-lg tracking-widest px-3 py-2 rounded-lg font-mono">
                             <button onclick="verifyEditOTP()" class="btn-cyber-green font-orbitron text-xs font-bold text-green-400 px-5 py-2 rounded-lg">
                                 VERIFY
                             </button>
@@ -322,7 +345,7 @@
                     </div>
                 </div>
 
-                <!-- STEP 2: PROFILE EDIT FORM (Hidden until OTP verified) -->
+                <!-- STEP 2: PROFILE EDIT FORM -->
                 <form id="edit-profile-form" onsubmit="handleProfileUpdate(event)" class="hidden space-y-4 mt-6 pt-6 border-t border-slate-800">
                     <div class="p-2 rounded bg-green-500/10 border border-green-500/30 text-green-400 text-xs font-orbitron flex items-center gap-2">
                         <i class="fa-solid fa-circle-check"></i> AUTHENTICATED: READY FOR EDITING
@@ -375,12 +398,12 @@
     <div id="reg-otp-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div class="hud-border p-6 rounded-2xl max-w-md w-full bg-cyber-dark border border-cyber-cyan shadow-[0_0_30px_rgba(0,240,255,0.3)]">
             <h3 class="font-orbitron text-lg text-cyber-cyan mb-2 flex items-center gap-2">
-                <i class="fa-solid fa-mobile-screen-button"></i> VERIFY REGISTRATION OTP
+                <i class="fa-solid fa-mobile-screen-button"></i> VERIFY REAL FIREBASE OTP
             </h3>
-            <p class="text-xs text-slate-400 mb-4 font-orbitron">An authentication code was sent to your phone. (Demo Code: <strong class="text-cyber-cyan">1234</strong>)</p>
+            <p class="text-xs text-slate-400 mb-4 font-orbitron">Enter the 6-digit OTP sent to your phone number via SMS.</p>
 
             <div class="space-y-4">
-                <input type="text" id="reg-otp-code" maxlength="4" placeholder="1234" class="cyber-input w-full text-center text-xl tracking-widest px-3 py-3 rounded-lg font-mono">
+                <input type="text" id="reg-otp-code" maxlength="6" placeholder="123456" class="cyber-input w-full text-center text-xl tracking-widest px-3 py-3 rounded-lg font-mono">
                 <div class="flex gap-3">
                     <button onclick="closeRegOTPModal()" class="w-1/2 bg-slate-800 border border-slate-700 text-slate-300 font-orbitron text-xs py-2.5 rounded-lg hover:bg-slate-700">
                         CANCEL
@@ -394,7 +417,6 @@
     </div>
 
     <script>
-        // Initial Records Database
         let workersDatabase = [
             {
                 id: "1",
@@ -403,23 +425,14 @@
                 city: "Ghaziabad",
                 pincode: "201002",
                 address: "Raj Nagar Sector 10",
-                occupations: ["Plumber", "Electrician"],
+                occupations: ["Plumber"],
                 avatar: "https://images.unsplash.com/photo-1540569014015-19a7be504e3a?w=150&auto=format&fit=crop&q=80"
-            },
-            {
-                id: "2",
-                name: "Monu",
-                phone: "9410488445",
-                city: "Dhampur",
-                pincode: "246761",
-                address: "Chemical Road Allhaipur",
-                occupations: ["Painter"],
-                avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80"
             }
         ];
 
         let pendingRegData = null;
         let activeVerifiedPhone = null;
+        let confirmationResultGlobal = null;
 
         function switchTab(tabName) {
             document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -506,8 +519,8 @@
             renderWorkers(filtered);
         }
 
-        /* --- REGISTRATION WITH OTP FLOW --- */
-        function initiateRegistrationOTP(e) {
+        /* --- FIREBASE REGISTRATION OTP FLOW --- */
+        async function initiateRegistrationOTP(e) {
             e.preventDefault();
 
             const name = document.getElementById('reg-name').value.trim();
@@ -527,7 +540,6 @@
                 return;
             }
 
-            // Save details temporarily for verification
             pendingRegData = {
                 id: Date.now().toString(),
                 name,
@@ -536,12 +548,31 @@
                 pincode,
                 address,
                 occupations: [occupation],
-                avatar: `https://images.unsplash.com/photo-${1530000000000 + Math.floor(Math.random()*100000)}?w=150&auto=format&fit=crop&q=80`
+                avatar: `https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80`
             };
 
-            // Open OTP Modal
-            document.getElementById('reg-otp-code').value = '';
-            document.getElementById('reg-otp-modal').classList.remove('hidden');
+            // Setup reCAPTCHA & Send Real SMS
+            try {
+                if(!window.recaptchaVerifierReg) {
+                    window.recaptchaVerifierReg = new firebase.auth.RecaptchaVerifier('recaptcha-container-reg', {
+                        'size': 'invisible'
+                    });
+                }
+                
+                const phoneNumberWithCountry = "+91" + phone;
+                showToast("Sending Firebase OTP SMS...", "info");
+
+                const confirmationResult = await firebase.auth().signInWithPhoneNumber(phoneNumberWithCountry, window.recaptchaVerifierReg);
+                confirmationResultGlobal = confirmationResult;
+
+                document.getElementById('reg-otp-code').value = '';
+                document.getElementById('reg-otp-modal').classList.remove('hidden');
+                showToast("OTP SMS sent to " + phone, "success");
+
+            } catch (error) {
+                console.error("Firebase Error:", error);
+                showToast("Failed to send OTP SMS: " + error.message, "error");
+            }
         }
 
         function closeRegOTPModal() {
@@ -549,26 +580,31 @@
             pendingRegData = null;
         }
 
-        function confirmRegOTPAndCreate() {
+        async function confirmRegOTPAndCreate() {
             const code = document.getElementById('reg-otp-code').value.trim();
-            
-            if (code === "1234") {
-                if (pendingRegData) {
+            if(!code || code.length !== 6) {
+                showToast("Enter valid 6-digit OTP", "error");
+                return;
+            }
+
+            try {
+                if (confirmationResultGlobal && pendingRegData) {
+                    await confirmationResultGlobal.confirm(code);
                     workersDatabase.push(pendingRegData);
-                    showToast("OTP Verified! Worker Profile Successfully Created!", "success");
+                    showToast("Real OTP Verified! Profile Created Successfully!", "success");
                     
                     document.getElementById('register-form').reset();
                     closeRegOTPModal();
                     renderWorkers(workersDatabase);
                     switchTab('search');
                 }
-            } else {
-                showToast("Invalid OTP code. Enter demo OTP 1234", "error");
+            } catch (error) {
+                showToast("Invalid OTP code entered!", "error");
             }
         }
 
-        /* --- EDIT PROFILE OTP FLOW --- */
-        function sendEditOTP() {
+        /* --- FIREBASE EDIT PROFILE OTP FLOW --- */
+        async function sendEditOTP() {
             const phone = document.getElementById('edit-phone').value.trim();
             if (phone.length !== 10) {
                 showToast("Please enter a valid 10-digit phone number", "error");
@@ -581,24 +617,44 @@
                 return;
             }
 
-            document.getElementById('otp-input-box').classList.remove('hidden');
-            showToast("OTP sent successfully! Demo OTP code is 1234", "info");
+            try {
+                if(!window.recaptchaVerifierEdit) {
+                    window.recaptchaVerifierEdit = new firebase.auth.RecaptchaVerifier('recaptcha-container-edit', {
+                        'size': 'invisible'
+                    });
+                }
+
+                const phoneNumberWithCountry = "+91" + phone;
+                showToast("Sending Firebase OTP SMS...", "info");
+
+                const confirmationResult = await firebase.auth().signInWithPhoneNumber(phoneNumberWithCountry, window.recaptchaVerifierEdit);
+                confirmationResultGlobal = confirmationResult;
+
+                document.getElementById('otp-input-box').classList.remove('hidden');
+                showToast("OTP SMS Sent to " + phone, "success");
+
+            } catch (error) {
+                showToast("Error sending OTP: " + error.message, "error");
+            }
         }
 
-        function verifyEditOTP() {
+        async function verifyEditOTP() {
             const code = document.getElementById('otp-code').value.trim();
             const phone = document.getElementById('edit-phone').value.trim();
 
-            if (code === "1234") {
-                const worker = workersDatabase.find(w => w.phone === phone);
-                if (worker) {
-                    activeVerifiedPhone = phone;
-                    populateEditForm(worker);
-                    document.getElementById('edit-profile-form').classList.remove('hidden');
-                    showToast("OTP Verified! Profile unlocked.", "success");
+            try {
+                if(confirmationResultGlobal) {
+                    await confirmationResultGlobal.confirm(code);
+                    const worker = workersDatabase.find(w => w.phone === phone);
+                    if (worker) {
+                        activeVerifiedPhone = phone;
+                        populateEditForm(worker);
+                        document.getElementById('edit-profile-form').classList.remove('hidden');
+                        showToast("OTP Verified! Profile unlocked.", "success");
+                    }
                 }
-            } else {
-                showToast("Invalid OTP code. Please enter 1234", "error");
+            } catch (error) {
+                showToast("Invalid Firebase OTP code!", "error");
             }
         }
 
@@ -663,7 +719,6 @@
             document.getElementById('toast-msg').classList.add('hidden');
         }
 
-        // Initial Load Event
         window.onload = function() {
             renderWorkers(workersDatabase);
         };
