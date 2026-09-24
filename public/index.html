@@ -230,6 +230,7 @@
             </div>
         </section>
 
+        <!-- SECTION 2: WORKER REGISTRATION -->
         <section id="section-register" class="hidden max-w-2xl mx-auto">
             <div class="hud-border p-6 md:p-8 rounded-2xl">
                 <h2 class="font-orbitron text-xl text-purple-400 mb-1 flex items-center gap-2 glow-purple">
@@ -237,7 +238,7 @@
                 </h2>
                 <p class="text-xs text-slate-400 mb-6 font-orbitron">Join FixKart network as a verified skilled professional</p>
 
-                <form id="register-form" onsubmit="handleRegistration(event)" class="space-y-4">
+                <form id="register-form" onsubmit="initiateRegistrationOTP(event)" class="space-y-4">
                     <div>
                         <label class="block text-xs font-orbitron text-slate-300 mb-1">FULL NAME *</label>
                         <input type="text" id="reg-name" required placeholder="e.g. Rahul Kumar" class="cyber-input w-full px-3 py-2.5 rounded-lg text-sm">
@@ -266,27 +267,17 @@
                     </div>
 
                     <div>
-                        <label class="block text-xs font-orbitron text-slate-300 mb-2">OCCUPATIONS / SERVICES *</label>
-                        <div class="flex flex-wrap gap-2 text-xs">
-                            <label class="cyber-tag cursor-pointer bg-cyber-dark border border-slate-700 px-3 py-1.5 rounded-lg flex items-center gap-1.5 hover:border-cyber-cyan">
-                                <input type="checkbox" name="reg-occupations" value="Plumber" class="accent-cyan-400"> Plumber
-                            </label>
-                            <label class="cyber-tag cursor-pointer bg-cyber-dark border border-slate-700 px-3 py-1.5 rounded-lg flex items-center gap-1.5 hover:border-cyber-cyan">
-                                <input type="checkbox" name="reg-occupations" value="Electrician" class="accent-cyan-400"> Electrician
-                            </label>
-                            <label class="cyber-tag cursor-pointer bg-cyber-dark border border-slate-700 px-3 py-1.5 rounded-lg flex items-center gap-1.5 hover:border-cyber-cyan">
-                                <input type="checkbox" name="reg-occupations" value="Painter" class="accent-cyan-400"> Painter
-                            </label>
-                            <label class="cyber-tag cursor-pointer bg-cyber-dark border border-slate-700 px-3 py-1.5 rounded-lg flex items-center gap-1.5 hover:border-cyber-cyan">
-                                <input type="checkbox" name="reg-occupations" value="Carpenter" class="accent-cyan-400"> Carpenter
-                            </label>
-                            <label class="cyber-tag cursor-pointer bg-cyber-dark border border-slate-700 px-3 py-1.5 rounded-lg flex items-center gap-1.5 hover:border-cyber-cyan">
-                                <input type="checkbox" name="reg-occupations" value="AC Repair" class="accent-cyan-400"> AC Repair
-                            </label>
-                            <label class="cyber-tag cursor-pointer bg-cyber-dark border border-slate-700 px-3 py-1.5 rounded-lg flex items-center gap-1.5 hover:border-cyber-cyan">
-                                <input type="checkbox" name="reg-occupations" value="Mechanic" class="accent-cyan-400"> Mechanic
-                            </label>
-                        </div>
+                        <label class="block text-xs font-orbitron text-slate-300 mb-2">OCCUPATIONS / SERVICES * (Dropdown)</label>
+                        <select id="reg-occupation-select" class="cyber-input w-full px-3 py-2.5 rounded-lg text-sm font-rajdhani bg-cyber-dark">
+                            <option value="" disabled selected>-- Select Primary Service --</option>
+                            <option value="Plumber">Plumber</option>
+                            <option value="Electrician">Electrician</option>
+                            <option value="Painter">Painter</option>
+                            <option value="Carpenter">Carpenter</option>
+                            <option value="AC Repair">AC Repair</option>
+                            <option value="Mechanic">Mechanic</option>
+                            <option value="Mason">Mason</option>
+                        </select>
                     </div>
 
                     <button type="submit" class="w-full btn-cyber-cyan font-orbitron text-sm font-bold text-cyber-cyan py-3 rounded-lg mt-4 flex items-center justify-center gap-2">
@@ -296,6 +287,7 @@
             </div>
         </section>
 
+        <!-- SECTION 3: EDIT PROFILE -->
         <section id="section-edit" class="hidden max-w-2xl mx-auto">
             <div class="hud-border p-6 md:p-8 rounded-2xl">
                 <h2 class="font-orbitron text-xl text-amber-400 mb-1 flex items-center gap-2 glow-purple">
@@ -309,7 +301,7 @@
                         <label class="block text-xs font-orbitron text-slate-300 mb-1">REGISTERED PHONE NUMBER</label>
                         <div class="flex gap-2">
                             <input type="tel" id="edit-phone" placeholder="Enter 10-digit number" class="cyber-input flex-grow px-3 py-2.5 rounded-lg text-sm">
-                            <button onclick="sendOTP()" class="btn-cyber-cyan font-orbitron text-xs font-bold text-cyber-cyan px-4 py-2.5 rounded-lg whitespace-nowrap">
+                            <button onclick="sendEditOTP()" class="btn-cyber-cyan font-orbitron text-xs font-bold text-cyber-cyan px-4 py-2.5 rounded-lg whitespace-nowrap">
                                 SEND OTP
                             </button>
                         </div>
@@ -323,7 +315,7 @@
                         </div>
                         <div class="flex gap-2">
                             <input type="text" id="otp-code" maxlength="4" placeholder="1234" class="cyber-input flex-grow text-center text-lg tracking-widest px-3 py-2 rounded-lg font-mono">
-                            <button onclick="verifyOTP()" class="btn-cyber-green font-orbitron text-xs font-bold text-green-400 px-5 py-2 rounded-lg">
+                            <button onclick="verifyEditOTP()" class="btn-cyber-green font-orbitron text-xs font-bold text-green-400 px-5 py-2 rounded-lg">
                                 VERIFY
                             </button>
                         </div>
@@ -358,27 +350,16 @@
                     </div>
 
                     <div>
-                        <label class="block text-xs font-orbitron text-slate-300 mb-2">OCCUPATIONS / SERVICES</label>
-                        <div class="flex flex-wrap gap-2 text-xs">
-                            <label class="cyber-tag cursor-pointer bg-cyber-dark border border-slate-700 px-3 py-1.5 rounded-lg flex items-center gap-1.5">
-                                <input type="checkbox" name="edit-occupations" value="Plumber" class="accent-cyan-400"> Plumber
-                            </label>
-                            <label class="cyber-tag cursor-pointer bg-cyber-dark border border-slate-700 px-3 py-1.5 rounded-lg flex items-center gap-1.5">
-                                <input type="checkbox" name="edit-occupations" value="Electrician" class="accent-cyan-400"> Electrician
-                            </label>
-                            <label class="cyber-tag cursor-pointer bg-cyber-dark border border-slate-700 px-3 py-1.5 rounded-lg flex items-center gap-1.5">
-                                <input type="checkbox" name="edit-occupations" value="Painter" class="accent-cyan-400"> Painter
-                            </label>
-                            <label class="cyber-tag cursor-pointer bg-cyber-dark border border-slate-700 px-3 py-1.5 rounded-lg flex items-center gap-1.5">
-                                <input type="checkbox" name="edit-occupations" value="Carpenter" class="accent-cyan-400"> Carpenter
-                            </label>
-                            <label class="cyber-tag cursor-pointer bg-cyber-dark border border-slate-700 px-3 py-1.5 rounded-lg flex items-center gap-1.5">
-                                <input type="checkbox" name="edit-occupations" value="AC Repair" class="accent-cyan-400"> AC Repair
-                            </label>
-                            <label class="cyber-tag cursor-pointer bg-cyber-dark border border-slate-700 px-3 py-1.5 rounded-lg flex items-center gap-1.5">
-                                <input type="checkbox" name="edit-occupations" value="Mechanic" class="accent-cyan-400"> Mechanic
-                            </label>
-                        </div>
+                        <label class="block text-xs font-orbitron text-slate-300 mb-2">OCCUPATION / SERVICE</label>
+                        <select id="edit-occupation-select" class="cyber-input w-full px-3 py-2.5 rounded-lg text-sm font-rajdhani bg-cyber-dark">
+                            <option value="Plumber">Plumber</option>
+                            <option value="Electrician">Electrician</option>
+                            <option value="Painter">Painter</option>
+                            <option value="Carpenter">Carpenter</option>
+                            <option value="AC Repair">AC Repair</option>
+                            <option value="Mechanic">Mechanic</option>
+                            <option value="Mason">Mason</option>
+                        </select>
                     </div>
 
                     <button type="submit" class="w-full btn-cyber-green font-orbitron text-sm font-bold text-green-400 py-3 rounded-lg flex items-center justify-center gap-2">
@@ -390,8 +371,30 @@
 
     </main>
 
+    <!-- REGISTRATION OTP MODAL POPUP -->
+    <div id="reg-otp-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="hud-border p-6 rounded-2xl max-w-md w-full bg-cyber-dark border border-cyber-cyan shadow-[0_0_30px_rgba(0,240,255,0.3)]">
+            <h3 class="font-orbitron text-lg text-cyber-cyan mb-2 flex items-center gap-2">
+                <i class="fa-solid fa-mobile-screen-button"></i> VERIFY REGISTRATION OTP
+            </h3>
+            <p class="text-xs text-slate-400 mb-4 font-orbitron">An authentication code was sent to your phone. (Demo Code: <strong class="text-cyber-cyan">1234</strong>)</p>
+
+            <div class="space-y-4">
+                <input type="text" id="reg-otp-code" maxlength="4" placeholder="1234" class="cyber-input w-full text-center text-xl tracking-widest px-3 py-3 rounded-lg font-mono">
+                <div class="flex gap-3">
+                    <button onclick="closeRegOTPModal()" class="w-1/2 bg-slate-800 border border-slate-700 text-slate-300 font-orbitron text-xs py-2.5 rounded-lg hover:bg-slate-700">
+                        CANCEL
+                    </button>
+                    <button onclick="confirmRegOTPAndCreate()" class="w-1/2 btn-cyber-green text-green-400 font-orbitron text-xs font-bold py-2.5 rounded-lg">
+                        VERIFY & CREATE
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // Initial Mock Database Records (Integrated with backend fallback logic)
+        // Initial Records Database
         let workersDatabase = [
             {
                 id: "1",
@@ -415,6 +418,7 @@
             }
         ];
 
+        let pendingRegData = null;
         let activeVerifiedPhone = null;
 
         function switchTab(tabName) {
@@ -502,7 +506,8 @@
             renderWorkers(filtered);
         }
 
-        function handleRegistration(e) {
+        /* --- REGISTRATION WITH OTP FLOW --- */
+        function initiateRegistrationOTP(e) {
             e.preventDefault();
 
             const name = document.getElementById('reg-name').value.trim();
@@ -510,41 +515,60 @@
             const city = document.getElementById('reg-city').value.trim();
             const pincode = document.getElementById('reg-pincode').value.trim();
             const address = document.getElementById('reg-address').value.trim();
+            const occupation = document.getElementById('reg-occupation-select').value;
 
-            const selectedOccs = Array.from(document.querySelectorAll('input[name="reg-occupations"]:checked')).map(cb => cb.value);
-
-            if (selectedOccs.length === 0) {
-                showToast("Please select at least one occupation service!", "error");
+            if (!occupation) {
+                showToast("Please select an occupation service from the dropdown!", "error");
                 return;
             }
 
-            // Check if phone exists
             if (workersDatabase.some(w => w.phone === phone)) {
                 showToast("Phone number already registered. Please use Edit Profile.", "error");
                 return;
             }
 
-            const newWorker = {
+            // Save details temporarily for verification
+            pendingRegData = {
                 id: Date.now().toString(),
                 name,
                 phone,
                 city,
                 pincode,
                 address,
-                occupations: selectedOccs,
+                occupations: [occupation],
                 avatar: `https://images.unsplash.com/photo-${1530000000000 + Math.floor(Math.random()*100000)}?w=150&auto=format&fit=crop&q=80`
             };
 
-            workersDatabase.push(newWorker);
-            showToast("Worker Profile Successfully Created!", "success");
-            
-            // Reset form and switch to search
-            document.getElementById('register-form').reset();
-            renderWorkers(workersDatabase);
-            switchTab('search');
+            // Open OTP Modal
+            document.getElementById('reg-otp-code').value = '';
+            document.getElementById('reg-otp-modal').classList.remove('hidden');
         }
 
-        function sendOTP() {
+        function closeRegOTPModal() {
+            document.getElementById('reg-otp-modal').classList.add('hidden');
+            pendingRegData = null;
+        }
+
+        function confirmRegOTPAndCreate() {
+            const code = document.getElementById('reg-otp-code').value.trim();
+            
+            if (code === "1234") {
+                if (pendingRegData) {
+                    workersDatabase.push(pendingRegData);
+                    showToast("OTP Verified! Worker Profile Successfully Created!", "success");
+                    
+                    document.getElementById('register-form').reset();
+                    closeRegOTPModal();
+                    renderWorkers(workersDatabase);
+                    switchTab('search');
+                }
+            } else {
+                showToast("Invalid OTP code. Enter demo OTP 1234", "error");
+            }
+        }
+
+        /* --- EDIT PROFILE OTP FLOW --- */
+        function sendEditOTP() {
             const phone = document.getElementById('edit-phone').value.trim();
             if (phone.length !== 10) {
                 showToast("Please enter a valid 10-digit phone number", "error");
@@ -561,7 +585,7 @@
             showToast("OTP sent successfully! Demo OTP code is 1234", "info");
         }
 
-        function verifyOTP() {
+        function verifyEditOTP() {
             const code = document.getElementById('otp-code').value.trim();
             const phone = document.getElementById('edit-phone').value.trim();
 
@@ -583,10 +607,7 @@
             document.getElementById('edit-city').value = worker.city;
             document.getElementById('edit-pincode').value = worker.pincode;
             document.getElementById('edit-address').value = worker.address;
-
-            document.querySelectorAll('input[name="edit-occupations"]').forEach(cb => {
-                cb.checked = worker.occupations.includes(cb.value);
-            });
+            document.getElementById('edit-occupation-select').value = worker.occupations[0] || "Plumber";
         }
 
         function handleProfileUpdate(e) {
@@ -597,13 +618,7 @@
             const city = document.getElementById('edit-city').value.trim();
             const pincode = document.getElementById('edit-pincode').value.trim();
             const address = document.getElementById('edit-address').value.trim();
-
-            const selectedOccs = Array.from(document.querySelectorAll('input[name="edit-occupations"]:checked')).map(cb => cb.value);
-
-            if (selectedOccs.length === 0) {
-                showToast("Please select at least one occupation service!", "error");
-                return;
-            }
+            const occupation = document.getElementById('edit-occupation-select').value;
 
             const index = workersDatabase.findIndex(w => w.phone === activeVerifiedPhone);
             if (index !== -1) {
@@ -613,7 +628,7 @@
                     city,
                     pincode,
                     address,
-                    occupations: selectedOccs
+                    occupations: [occupation]
                 };
 
                 showToast("Worker Profile Updated Successfully!", "success");
