@@ -6,7 +6,9 @@ const path = require('path');
 const app = express();
 
 // Middlewares
-app.use(express.json());
+// Increase JSON payload limit to handle Base64 Image Uploads smoothly
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.use(cors());
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -74,11 +76,11 @@ app.post('/api/workers/register', async (req, res) => {
 // ROUTE 3: Update Worker Profile
 app.put('/api/workers/update', async (req, res) => {
     try {
-        const { phone, name, city, pincode, address, occupations } = req.body;
+        const { phone, name, city, pincode, address, occupations, avatar } = req.body;
 
         const updatedWorker = await Worker.findOneAndUpdate(
             { phone: phone },
-            { name, city, pincode, address, occupations },
+            { name, city, pincode, address, occupations, avatar },
             { new: true }
         );
 

@@ -161,6 +161,11 @@
             color: #00f0ff;
             box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
         }
+
+        .checkbox-cyber:checked {
+            background-color: #00f0ff;
+            border-color: #00f0ff;
+        }
     </style>
 </head>
 <body class="p-3 md:p-6 relative overflow-x-hidden">
@@ -224,7 +229,7 @@
                     </div>
                     <div>
                         <label class="block text-xs font-orbitron text-slate-400 mb-1">SERVICE / OCCUPATION</label>
-                        <input type="text" id="search-service" placeholder="e.g. Plumber, Painter" class="cyber-input w-full px-3 py-2.5 rounded-lg text-sm placeholder-slate-600">
+                        <input type="text" id="search-service" placeholder="e.g. Plumber, Leakage, AC" class="cyber-input w-full px-3 py-2.5 rounded-lg text-sm placeholder-slate-600">
                     </div>
                     <div class="flex items-end">
                         <button onclick="performSearch()" class="btn-cyber-cyan w-full font-orbitron text-sm font-bold text-cyber-cyan py-2.5 rounded-lg flex items-center justify-center gap-2">
@@ -250,7 +255,7 @@
         </section>
 
         <!-- SECTION 2: WORKER REGISTRATION -->
-        <section id="section-register" class="hidden max-w-2xl mx-auto">
+        <section id="section-register" class="hidden max-w-3xl mx-auto">
             <div class="hud-border p-6 md:p-8 rounded-2xl">
                 <h2 class="font-orbitron text-xl text-purple-400 mb-1 flex items-center gap-2 glow-purple">
                     <i class="fa-solid fa-id-card"></i> WORKER REGISTRATION
@@ -258,6 +263,23 @@
                 <p class="text-xs text-slate-400 mb-6 font-orbitron">Join FixKart network as a verified skilled professional</p>
 
                 <form id="register-form" onsubmit="initiateRegistrationOTP(event)" class="space-y-4">
+                    <!-- Profile Photo Upload Field -->
+                    <div class="hud-border p-4 rounded-xl bg-cyber-dark/50">
+                        <label class="block text-xs font-orbitron text-cyan-400 mb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-camera"></i> PROFILE PHOTO UPLOAD
+                        </label>
+                        <div class="flex items-center gap-4">
+                            <div class="relative w-16 h-16 rounded-lg overflow-hidden border border-cyber-cyan bg-slate-900 flex items-center justify-center">
+                                <img id="reg-photo-preview" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80" class="w-full h-full object-cover">
+                            </div>
+                            <div class="flex-grow">
+                                <input type="file" id="reg-photo-file" accept="image/*" onchange="previewImage(this, 'reg-photo-preview', 'reg-avatar-base64')" class="text-xs text-slate-400 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-orbitron file:bg-cyber-cyan/20 file:text-cyber-cyan hover:file:bg-cyber-cyan/40">
+                                <p class="text-[10px] text-slate-500 mt-1 font-orbitron">Choose a clear face photo (JPG/PNG)</p>
+                                <input type="hidden" id="reg-avatar-base64" value="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80">
+                            </div>
+                        </div>
+                    </div>
+
                     <div>
                         <label class="block text-xs font-orbitron text-slate-300 mb-1">FULL NAME *</label>
                         <input type="text" id="reg-name" required placeholder="e.g. Rahul Kumar" class="cyber-input w-full px-3 py-2.5 rounded-lg text-sm">
@@ -285,18 +307,15 @@
                         </div>
                     </div>
 
+                    <!-- 15 MAIN CATEGORIES MULTI-SELECT CHECKBOXES -->
                     <div>
-                        <label class="block text-xs font-orbitron text-slate-300 mb-2">OCCUPATIONS / SERVICES *</label>
-                        <select id="reg-occupation-select" class="cyber-input w-full px-3 py-2.5 rounded-lg text-sm font-rajdhani bg-cyber-dark">
-                            <option value="" disabled selected>-- Select Primary Service --</option>
-                            <option value="Plumber">Plumber</option>
-                            <option value="Electrician">Electrician</option>
-                            <option value="Painter">Painter</option>
-                            <option value="Carpenter">Carpenter</option>
-                            <option value="AC Repair">AC Repair</option>
-                            <option value="Mechanic">Mechanic</option>
-                            <option value="Mason">Mason</option>
-                        </select>
+                        <label class="block text-xs font-orbitron text-slate-300 mb-2 flex justify-between items-center">
+                            <span>SELECT OCCUPATIONS & SERVICES (Choose 1 or more) *</span>
+                            <span class="text-[10px] text-cyber-cyan">Multi-Select Allowed</span>
+                        </label>
+                        <div id="reg-categories-container" class="space-y-3 max-h-72 overflow-y-auto p-3 border border-slate-800 rounded-xl bg-cyber-dark/80">
+                            <!-- Categories & Sub-services generated via JS -->
+                        </div>
                     </div>
 
                     <button type="submit" class="w-full btn-cyber-cyan font-orbitron text-sm font-bold text-cyber-cyan py-3 rounded-lg mt-4 flex items-center justify-center gap-2">
@@ -307,7 +326,7 @@
         </section>
 
         <!-- SECTION 3: EDIT PROFILE -->
-        <section id="section-edit" class="hidden max-w-2xl mx-auto">
+        <section id="section-edit" class="hidden max-w-3xl mx-auto">
             <div class="hud-border p-6 md:p-8 rounded-2xl">
                 <h2 class="font-orbitron text-xl text-amber-400 mb-1 flex items-center gap-2 glow-purple">
                     <i class="fa-solid fa-shield-halved"></i> SECURE PROFILE MANAGEMENT
@@ -346,6 +365,23 @@
                         <i class="fa-solid fa-circle-check"></i> AUTHENTICATED: READY FOR EDITING
                     </div>
 
+                    <!-- Profile Photo Update Field -->
+                    <div class="hud-border p-4 rounded-xl bg-cyber-dark/50">
+                        <label class="block text-xs font-orbitron text-amber-400 mb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-camera"></i> UPDATE PROFILE PHOTO
+                        </label>
+                        <div class="flex items-center gap-4">
+                            <div class="relative w-16 h-16 rounded-lg overflow-hidden border border-amber-400 bg-slate-900 flex items-center justify-center">
+                                <img id="edit-photo-preview" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80" class="w-full h-full object-cover">
+                            </div>
+                            <div class="flex-grow">
+                                <input type="file" id="edit-photo-file" accept="image/*" onchange="previewImage(this, 'edit-photo-preview', 'edit-avatar-base64')" class="text-xs text-slate-400 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-orbitron file:bg-amber-400/20 file:text-amber-400 hover:file:bg-amber-400/40">
+                                <p class="text-[10px] text-slate-500 mt-1 font-orbitron">Upload new photo to replace current image</p>
+                                <input type="hidden" id="edit-avatar-base64">
+                            </div>
+                        </div>
+                    </div>
+
                     <div>
                         <label class="block text-xs font-orbitron text-slate-300 mb-1">NAME</label>
                         <input type="text" id="edit-name" required class="cyber-input w-full px-3 py-2.5 rounded-lg text-sm">
@@ -367,17 +403,15 @@
                         <input type="text" id="edit-address" required class="cyber-input w-full px-3 py-2.5 rounded-lg text-sm">
                     </div>
 
+                    <!-- 15 MAIN CATEGORIES MULTI-SELECT CHECKBOXES FOR EDIT -->
                     <div>
-                        <label class="block text-xs font-orbitron text-slate-300 mb-2">OCCUPATION / SERVICE</label>
-                        <select id="edit-occupation-select" class="cyber-input w-full px-3 py-2.5 rounded-lg text-sm font-rajdhani bg-cyber-dark">
-                            <option value="Plumber">Plumber</option>
-                            <option value="Electrician">Electrician</option>
-                            <option value="Painter">Painter</option>
-                            <option value="Carpenter">Carpenter</option>
-                            <option value="AC Repair">AC Repair</option>
-                            <option value="Mechanic">Mechanic</option>
-                            <option value="Mason">Mason</option>
-                        </select>
+                        <label class="block text-xs font-orbitron text-slate-300 mb-2 flex justify-between items-center">
+                            <span>UPDATE OCCUPATIONS & SERVICES *</span>
+                            <span class="text-[10px] text-amber-400">Multi-Select Allowed</span>
+                        </label>
+                        <div id="edit-categories-container" class="space-y-3 max-h-72 overflow-y-auto p-3 border border-slate-800 rounded-xl bg-cyber-dark/80">
+                            <!-- Categories & Sub-services generated via JS -->
+                        </div>
                     </div>
 
                     <button type="submit" class="w-full btn-cyber-green font-orbitron text-sm font-bold text-green-400 py-3 rounded-lg flex items-center justify-center gap-2">
@@ -412,6 +446,25 @@
     </div>
 
     <script>
+        // --- 15 MAIN SERVICE CATEGORIES TAXONOMY DATA ---
+        const categoryTaxonomy = [
+            { main: "🚰 Plumbing & Water", items: ["Plumber", "Bathroom Fitting", "Leakage Repair", "Water Tank Cleaning", "Pipeline Installation"] },
+            { main: "⚡ Electrical", items: ["Electrician", "House Wiring", "MCB Repair", "Fan & Light", "Switch & Socket", "Inverter Fitting"] },
+            { main: "❄️ AC & Cooling", items: ["AC Repair", "AC Installation", "AC Servicing", "Refrigerator Repair"] },
+            { main: "🔌 Appliance Repair", items: ["Washing Machine Repair", "TV Repair", "RO Water Filter", "Microwave Repair", "Geyser Repair"] },
+            { main: "🪚 Carpentry & Furniture", items: ["Carpenter", "Furniture Repair", "Modular Kitchen Setup", "Door & Window Lock"] },
+            { main: "🎨 Painting & Renovation", items: ["Wall Painter", "Putty & Primer", "Texture Painting", "Waterproofing"] },
+            { main: "🧱 Construction & Flooring", items: ["Rajmistri (Mason)", "Tiles Fitting", "Marble & Granite Work", "False Ceiling"] },
+            { main: "🛡️ Metal, Glass & Aluminium", items: ["Welder", "Grill & Gate Fabricator", "Aluminium Partition", "Glass Fitting"] },
+            { main: "🔑 Security & Smart Home", items: ["Locksmith", "CCTV Camera Installer", "Smart Lock Repair", "Video Doorbell"] },
+            { main: "🧹 Cleaning & Pest Control", items: ["House Deep Cleaning", "Maid / Domestic Helper", "Pest Control Specialist"] },
+            { main: "🌳 Garden & Outdoor", items: ["Mali (Gardener)", "Lawn Maintenance", "Terrace Garden Setup"] },
+            { main: "🚗 Vehicle Services", items: ["Car Mechanic", "Bike Mechanic", "Puncture Repair", "Vehicle Washing & Detailing"] },
+            { main: "🚚 Moving & Labour", items: ["Packers & Movers", "Tempo / Loader Driver", "Loading & Shifting Helper"] },
+            { main: "☀️ Solar, EV & Energy", items: ["Solar Panel Installer", "EV Charger Setup", "Commercial Generator Repair"] },
+            { main: "👨‍👩‍👧 Personal & Care Services", items: ["Barber / Home Salon", "Beautician", "Tutor", "Babysitter", "Elderly Caretaker", "Pet Groomer"] }
+        ];
+
         let workersDatabase = [];
         let pendingRegData = null;
         let activeVerifiedPhone = null;
@@ -432,6 +485,41 @@
             selectedBtn.classList.remove('text-slate-400');
 
             document.getElementById(`section-${tabName}`).classList.remove('hidden');
+        }
+
+        // --- GENERATE CATEGORIES CHECKBOXES ---
+        function renderCategoriesCheckboxes(containerId, groupPrefix) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = categoryTaxonomy.map((cat, idx) => `
+                <div class="border border-slate-800 rounded-lg p-2.5 bg-slate-900/50">
+                    <h5 class="text-xs font-orbitron font-bold text-cyber-cyan mb-2">${cat.main}</h5>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+                        ${cat.items.map(subItem => `
+                            <label class="flex items-center gap-2 text-xs text-slate-300 hover:text-white cursor-pointer">
+                                <input type="checkbox" name="${groupPrefix}-service" value="${subItem}" class="checkbox-cyber w-3.5 h-3.5 rounded bg-slate-800 border-slate-700">
+                                <span>${subItem}</span>
+                            </label>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // --- BASE64 IMAGE PREVIEW HANDLER ---
+        function previewImage(fileInput, previewImgId, hiddenInputId) {
+            const file = fileInput.files[0];
+            if (file) {
+                if (file.size > 2 * 1024 * 1024) {
+                    showToast("File size too large! Choose image under 2MB.", "error");
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById(previewImgId).src = e.target.result;
+                    document.getElementById(hiddenInputId).value = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
         }
 
         // --- FETCH WORKERS FROM MONGODB BACKEND ---
@@ -482,9 +570,9 @@
                         </div>
                     </div>
 
-                    <div class="flex flex-wrap gap-1.5">
+                    <div class="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto">
                         ${(worker.occupations || []).map(occ => `
-                            <span class="text-[11px] font-orbitron bg-cyber-dark/80 text-purple-300 border border-purple-500/30 px-2.5 py-0.5 rounded">
+                            <span class="text-[11px] font-orbitron bg-cyber-dark/80 text-purple-300 border border-purple-500/30 px-2 py-0.5 rounded">
                                 ${occ}
                             </span>
                         `).join('')}
@@ -526,10 +614,14 @@
             const city = document.getElementById('reg-city').value.trim();
             const pincode = document.getElementById('reg-pincode').value.trim();
             const address = document.getElementById('reg-address').value.trim();
-            const occupation = document.getElementById('reg-occupation-select').value;
+            const avatar = document.getElementById('reg-avatar-base64').value;
 
-            if (!occupation) {
-                showToast("Please select an occupation service from the dropdown!", "error");
+            // Collect selected multi-checkboxes
+            const selectedOccupations = Array.from(document.querySelectorAll('input[name="reg-service"]:checked'))
+                                             .map(cb => cb.value);
+
+            if (selectedOccupations.length === 0) {
+                showToast("Please select at least one service occupation!", "error");
                 return;
             }
 
@@ -544,8 +636,8 @@
                 city,
                 pincode,
                 address,
-                occupations: [occupation],
-                avatar: `https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80`
+                occupations: selectedOccupations,
+                avatar
             };
 
             try {
@@ -585,11 +677,9 @@
 
             try {
                 if (confirmationResultGlobal && pendingRegData) {
-                    // 1. Verify OTP using Firebase Auth
                     await confirmationResultGlobal.confirm(code);
                     showToast("OTP Verified! Saving to MongoDB Database...", "info");
                     
-                    // 2. Save data to MongoDB Database via API
                     const apiRes = await fetch('/api/workers/register', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -602,7 +692,7 @@
                         showToast("Profile Created & Saved to Database Successfully!", "success");
                         document.getElementById('register-form').reset();
                         closeRegOTPModal();
-                        fetchAndRenderWorkers(); // Re-fetch from MongoDB
+                        fetchAndRenderWorkers();
                         switchTab('search');
                     } else {
                         showToast(resData.message || "Failed to save in MongoDB Database!", "error");
@@ -674,7 +764,16 @@
             document.getElementById('edit-city').value = worker.city;
             document.getElementById('edit-pincode').value = worker.pincode;
             document.getElementById('edit-address').value = worker.address;
-            document.getElementById('edit-occupation-select').value = (worker.occupations && worker.occupations[0]) || "Plumber";
+            
+            if(worker.avatar) {
+                document.getElementById('edit-photo-preview').src = worker.avatar;
+                document.getElementById('edit-avatar-base64').value = worker.avatar;
+            }
+
+            // Pre-check worker's existing occupations
+            document.querySelectorAll('input[name="edit-service"]').forEach(cb => {
+                cb.checked = worker.occupations && worker.occupations.includes(cb.value);
+            });
         }
 
         async function handleProfileUpdate(e) {
@@ -685,7 +784,15 @@
             const city = document.getElementById('edit-city').value.trim();
             const pincode = document.getElementById('edit-pincode').value.trim();
             const address = document.getElementById('edit-address').value.trim();
-            const occupation = document.getElementById('edit-occupation-select').value;
+            const avatar = document.getElementById('edit-avatar-base64').value;
+
+            const selectedOccupations = Array.from(document.querySelectorAll('input[name="edit-service"]:checked'))
+                                             .map(cb => cb.value);
+
+            if (selectedOccupations.length === 0) {
+                showToast("Please select at least one service occupation!", "error");
+                return;
+            }
 
             const updatedData = {
                 phone: activeVerifiedPhone,
@@ -693,7 +800,8 @@
                 city,
                 pincode,
                 address,
-                occupations: [occupation]
+                occupations: selectedOccupations,
+                avatar
             };
 
             try {
@@ -705,7 +813,7 @@
 
                 if (apiRes.ok) {
                     showToast("Profile Updated in MongoDB Successfully!", "success");
-                    fetchAndRenderWorkers(); // Reload database
+                    fetchAndRenderWorkers();
                     switchTab('search');
                 } else {
                     showToast("Failed to update profile in database", "error");
@@ -743,6 +851,8 @@
         }
 
         window.onload = function() {
+            renderCategoriesCheckboxes('reg-categories-container', 'reg');
+            renderCategoriesCheckboxes('edit-categories-container', 'edit');
             fetchAndRenderWorkers();
         };
     </script>
